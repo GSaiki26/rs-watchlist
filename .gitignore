@@ -1,0 +1,6 @@
+# Folders
+**/target
+./data
+
+# Files
+*.env

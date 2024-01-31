@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  watchlist-db:
+    container_name: watchlist-db
+    image: surrealdb/surrealdb:latest
+    user: root  # DEFINED AS ROOT BECAUSE THE NORMAL USER HAS NO PERMISSION TO STORE DATA.
+    command: start file:/data --auth --user $DATABASE_USER --pass $DATABASE_PASS --log $DATABASE_LOG
+    # ports:
+    #   - 8000:8000/tcp
+    volumes:
+      - ./data:/data:rw
