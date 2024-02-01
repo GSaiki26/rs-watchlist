@@ -1,4 +1,6 @@
 # Rs Watchlist
+[![Audit](https://github.com/GSaiki26/rs-watchlist/actions/workflows/audit.yaml/badge.svg)](https://github.com/GSaiki26/rs-watchlist/actions/workflows/audit.yaml) [![Docker build](https://github.com/GSaiki26/rs-watchlist/actions/workflows/docker_build.yaml/badge.svg)](https://github.com/GSaiki26/rs-watchlist/actions/workflows/docker_build.yaml) [![Docker hub]]() [![Linter](https://github.com/GSaiki26/rs-watchlist/actions/workflows/linter.yaml/badge.svg)](https://github.com/GSaiki26/rs-watchlist/actions/workflows/linter.yaml)
+
 the Rust Watchlist is a application written in Rust is a CRUD using surrealdb to store a list of media's name.
 
 It's divided into 2 binaries: `api` and `client`.

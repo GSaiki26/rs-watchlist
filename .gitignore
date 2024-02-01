@@ -1,6 +1,7 @@
 # Folders
+**/.vscode
 **/target
-./data
+data
 
 # Files
 *.env
