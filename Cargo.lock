@@ -92,7 +92,6 @@ dependencies = [
  "once_cell",
  "serde",
  "surrealdb",
- "thiserror",
  "tokio",
  "tracing",
  "tracing-subscriber",
