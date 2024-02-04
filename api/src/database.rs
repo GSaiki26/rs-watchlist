@@ -10,7 +10,7 @@ use surrealdb::{
 use tracing::info;
 
 use crate::models::{
-    database_model::DatabaseModel, media::Media, user::User, watchlist::Watchlist,
+    media_model::Media, model_trait::ModelTrait, user_model::User, watchlist_model::Watchlist,
 };
 
 // Data
@@ -29,6 +29,9 @@ pub async fn initialize_db() -> Result<(), Box<dyn std::error::Error>> {
         &var("DATABASE_PASS")?,
     )
     .await?;
+
+    // Define the namespace.
+    DATABASE.use_ns("watchlist").use_db("api").await?;
 
     // Run the migrations
     migrations().await?;

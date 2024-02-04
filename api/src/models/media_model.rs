@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use surrealdb::sql::{Datetime, Id, Thing};
 use tracing::{info, warn};
 
-use super::database_model::DatabaseModel;
+use super::model_trait::ModelTrait;
 use crate::database::DATABASE;
 
 // Structs
@@ -15,32 +15,12 @@ pub struct Media {
     pub description: String,
     pub watchlist: Thing,
     pub watched: bool,
-    pub created_at: Datetime,
-    pub updated_at: Datetime,
+    pub created_at: Option<Datetime>,
+    pub updated_at: Option<Datetime>,
 }
 
 // Implementations
-impl Media {
-    /**
-     * A method to create a new media.
-     */
-    fn new(title: String, description: String, watchlist: String, watched: bool) -> Self {
-        Self {
-            id: None,
-            title,
-            description,
-            watched,
-            watchlist: Thing {
-                id: Id::from(watchlist),
-                tb: String::from("watchlist"),
-            },
-            created_at: Datetime::default(),
-            updated_at: Datetime::default(),
-        }
-    }
-}
-
-impl DatabaseModel<Media> for Media {
+impl ModelTrait<Media> for Media {
     async fn from_id(id: Id) -> surrealdb::Result<Option<Self>> {
         // Create the thing.
         let thing = Thing {
@@ -87,27 +67,35 @@ impl DatabaseModel<Media> for Media {
     async fn sync(&mut self) -> surrealdb::Result<()> {
         // Check if the Media already has an id. If not, generate a new one.
         if self.id.is_none() {
-            info!("Generating a new ID for the media...");
-            loop {
-                let id = Id::ulid();
-                if Self::from_id(id.clone()).await?.is_none() {
-                    self.id = Some(Thing {
-                        id,
-                        tb: String::from("media"),
-                    });
-                    break;
-                }
-            }
-            info!("Generated a new ID.");
-            self.created_at = Datetime::default();
+            return self.create().await;
         }
 
         // Sync the media in the database.
-        self.updated_at = Datetime::default();
+        self.updated_at = Some(Datetime::default());
         info!("Syncing the media in the database...");
         DATABASE.update::<Vec<Self>>("media").content(&self).await?;
         info!("Synced the media in the database.");
 
+        Ok(())
+    }
+
+    async fn create(&mut self) -> surrealdb::Result<()> {
+        // Generate a new thing for the media.
+        info!("Creating a new media...");
+        self.id = Some(Self::generate_new_ulid("media").await?);
+
+        // Create the media in the database.
+        self.created_at = Some(Datetime::default());
+        self.updated_at = self.created_at.clone();
+        let created_medias = DATABASE.create::<Vec<Self>>("media").content(&self).await?;
+
+        // Check if it was really created.
+        if created_medias.is_empty() {
+            warn!("No media was created.");
+            dbg!(self);
+        }
+
+        info!("New media created.");
         Ok(())
     }
 

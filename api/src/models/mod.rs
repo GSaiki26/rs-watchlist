@@ -1,4 +1,4 @@
-pub mod database_model;
-pub mod media;
-pub mod user;
-pub mod watchlist;
+pub mod media_model;
+pub mod model_trait;
+pub mod user_model;
+pub mod watchlist_model;
