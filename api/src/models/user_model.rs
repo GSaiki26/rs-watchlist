@@ -105,7 +105,7 @@ impl ModelTrait<User> for User {
                 "
                     BEGIN TRANSACTION;
                     DEFINE TABLE user SCHEMAFULL;
-                    DEFINE FIELD username ON TABLE user TYPE string VALUE string::lowercase($value) ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
+                    DEFINE FIELD username ON TABLE user TYPE string VALUE string::lowercase($value) ASSERT $value = /^[a-z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
                     DEFINE FIELD password ON TABLE user TYPE string ASSERT $value = /^[a-z0-9]{128}$/;
                     DEFINE FIELD created_at ON TABLE user TYPE datetime;
                     DEFINE FIELD updated_at ON TABLE user TYPE datetime;
@@ -118,15 +118,16 @@ impl ModelTrait<User> for User {
     }
 
     async fn sync(&mut self) -> surrealdb::Result<()> {
-        // Check if the user already has an id. If not, generate a new one.
-        if self.id.is_none() {
-            return self.create().await;
-        }
-
-        // Encrypt the password to SHA512.
+        // Define the username as lowercase and encrypt the password to SHA512.
+        self.username = self.username.to_lowercase();
         if self.password.len() != 128 {
             info!("Encrypting the password...");
             self.password = get_sha512(self.password.as_bytes());
+        }
+
+        // Check if the user already has an id. If not, generate a new one.
+        if self.id.is_none() {
+            return self.create().await;
         }
 
         // Sync the user in the database.

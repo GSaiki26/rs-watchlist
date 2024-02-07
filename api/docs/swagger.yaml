@@ -20,7 +20,6 @@ paths:
       description: A method to create a new user.
       operationId: createNewUser
       security: []
-      
       requestBody:
         required: true
         content:
@@ -30,6 +29,12 @@ paths:
               required: [username, password]
               allOf:
                 - $ref: '#/components/schemas/User'
+                - type: object
+                  properties:
+                    password:
+                      type: string
+                      example: 'password'
+                      pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
       responses:
         '201':
           $ref: '#/components/responses/201_User'
@@ -105,6 +110,23 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
+  /user/login:
+    post:
+      summary: Login a User.
+      description: A method to login an user.
+      operationId: loginUser
+      security: [basicAuth: []]
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
 
   # /media:
   #   post:
@@ -393,11 +415,7 @@ components:
         username:
           type: string
           example: 'username'
-          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
-        password:
-          type: string
-          example: 'password'
-          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+          pattern: '^[a-z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
     Media:
       type: object
       properties:
@@ -435,6 +453,12 @@ components:
       required: [username, password]
       allOf:
         - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            password:
+              type: string
+              example: 'password'
+              pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
     RequestMediaPost:
       type: object
       required: [title, description, watchlist, watched]
@@ -497,80 +521,104 @@ components:
                 - $ref: '#/components/schemas/ApiEntry'
 
   responses:
+    ResponseHeaders:
+      description: The default header for all responses.
+      headers:
+        content-length:
+          schema:
+            type: integer
+            format: int32
+        date:
+          schema:
+            type: string
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
     '200':
       description: Ok.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Response'
     '200_Media':
       description: Media updated.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessMedia'
     '200_User':
       description: User updated.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessUser'
     '200_Watchlist':
       description: Watchlist updated.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessWatchlist'
     '201_Media':
       description: Media created.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessMedia'
     '201_User':
       description: User created.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessUser'
     '201_Watchlist':
       description: Watchlist created.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseSuccessWatchlist'
     '400':
       description: Bad request parameters.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseError'
     '401':
       description: Unauthorized.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseError'
     '403':
       description: Forbidden.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseError'
     '404':
       description: Not Found.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseError'
     '429':
       description: Too Many Requests
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ResponseError'
     '500':
       description: Internal Server Error.
+      $ref: '#/components/responses/ResponseHeaders'
       content:
         application/json:
           schema:

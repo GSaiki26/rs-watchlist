@@ -35,7 +35,7 @@ pub async fn post_user(Json(mut user): Json<User>) -> Response {
     }
 
     // Try to synchronize the given user in the database.
-    match user.create().await {
+    match user.sync().await {
         Err(e) => {
             warn!("Couldn\'t create the user. {}", e);
             (

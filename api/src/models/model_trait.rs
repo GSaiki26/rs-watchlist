@@ -20,7 +20,7 @@ pub trait ModelTrait<T> {
     async fn sync(&mut self) -> surrealdb::Result<()>;
 
     /**
-     * A method to create a new T in the database.
+     * A method to create a new T in the database. MUST NOT BE CALLED DIRECTLY. USE sync() INSTEAD.
      */
     async fn create(&mut self) -> surrealdb::Result<()>;
 

@@ -20,7 +20,7 @@ pub fn get_router() -> Router {
         .route("/user", patch(patch_user))
         .route("/user", delete(delete_user))
         .route("/user/:user_id", get(get_user))
-        .route("/user/login", delete(post_user_login))
+        .route("/user/login", post(post_user_login))
         // .route("/watchlist", post(create_watchlist))
         // .route("/watchlist/:id", get(get_watchlist))
         // .route("/watchlist", patch(update_watchlist))
