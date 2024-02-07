@@ -1,11 +1,12 @@
 // Libs
-use std::process::exit;
+use std::{net::SocketAddr, process::exit};
 
 use tracing::{error, info};
 
 use database::initialize_db;
 mod controllers;
 mod database;
+mod middlewares;
 mod models;
 mod router;
 mod security;
@@ -34,7 +35,8 @@ async fn main() {
 
     info!("Server started successfully.");
     let listener = listener.unwrap();
-    axum::serve(listener, router::get_router())
+    let router = router::get_router().into_make_service_with_connect_info::<SocketAddr>();
+    axum::serve(listener, router)
         .await
         .expect("Couldn\'t serve the port.");
 }

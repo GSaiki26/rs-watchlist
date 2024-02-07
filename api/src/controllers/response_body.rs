@@ -1,6 +1,7 @@
 // Libs
 use axum::Json;
 use serde::Serialize;
+use serde_json::Value;
 
 // Enums
 #[derive(Serialize)]
@@ -11,29 +12,29 @@ enum Status {
 
 // Structs
 #[derive(Serialize)]
-pub struct ResponseBody<T: Serialize> {
+pub struct ResponseBody {
     status: Status,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<T>,
+    pub data: Option<Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
 }
 
 // Implementations
-impl<T: Serialize> ResponseBody<T> {
+impl ResponseBody {
     /**
-     * Create a success response.
+     * A method to create a success response body.
      */
-    pub fn success(data: T) -> Json<Self> {
+    pub fn success<T: Serialize>(data: T) -> Json<Self> {
         Json(Self {
             status: Status::Success,
-            data: Some(data),
+            data: Some(serde_json::to_value(data).unwrap()),
             message: None,
         })
     }
 
     /**
-     * Create a success response with no body.
+     * A method to create a success response without the data field.
      */
     pub fn success_no_data() -> Json<Self> {
         Json(Self {
@@ -44,8 +45,9 @@ impl<T: Serialize> ResponseBody<T> {
     }
 
     /**
-     * Create an error response.
-     */
+     * A method to create a error response body.
+
+    */
     pub fn error(message: &str) -> Json<Self> {
         Json(Self {
             status: Status::Failed,

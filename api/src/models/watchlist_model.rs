@@ -12,12 +12,30 @@ pub struct Watchlist {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Thing>,
     pub owner: Thing,
+    pub members: Vec<Thing>,
+    pub title: String,
     pub description: String,
     pub created_at: Option<Datetime>,
     pub updated_at: Option<Datetime>,
 }
 
 // Implementations
+impl Watchlist {
+    /**
+     * A method to check if the watchlist is owned by the given user.
+     */
+    pub fn is_owner(&self, owner: &Thing) -> bool {
+        self.owner == owner.clone()
+    }
+
+    /**
+     * A method to check if the watchlist has the given member.
+     */
+    pub fn has_member(&self, member: &Thing) -> bool {
+        self.members.contains(member)
+    }
+}
+
 impl ModelTrait<Watchlist> for Watchlist {
     async fn from_id(id: Id) -> surrealdb::Result<Option<Self>> {
         // Create the thing.
@@ -27,14 +45,14 @@ impl ModelTrait<Watchlist> for Watchlist {
         };
 
         // Get the watchlist.
-        info!("Getting {}.", thing);
-        match DATABASE.select::<Option<Self>>(thing).await? {
+        info!("Getting {}.", &thing);
+        match DATABASE.select::<Option<Self>>(thing.clone()).await? {
             None => {
-                info!("No watchlist found.");
+                info!("No {} found.", &thing);
                 Ok(None)
             }
             Some(watchlist) => {
-                info!("watchlist found.");
+                info!("{} found.", thing);
                 Ok(Some(watchlist))
             }
         }
@@ -48,8 +66,10 @@ impl ModelTrait<Watchlist> for Watchlist {
                 "
                     BEGIN TRANSACTION;
                     DEFINE TABLE watchlist SCHEMAFULL;
-                    DEFINE FIELD owner ON TABLE watchlist TYPE record(user);
-                    DEFINE FIELD description ON TABLE watchlist TYPE string;
+                    DEFINE FIELD owner ON TABLE watchlist TYPE record<user>;
+                    DEFINE FIELD members ON TABLE watchlist TYPE array<record<user>>;
+                    DEFINE FIELD title ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
+                    DEFINE FIELD description ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
                     DEFINE FIELD created_at ON TABLE watchlist TYPE datetime;
                     DEFINE FIELD updated_at ON TABLE watchlist TYPE datetime;
                     COMMIT TRANSACTION;
@@ -68,12 +88,12 @@ impl ModelTrait<Watchlist> for Watchlist {
 
         // Sync the watchlist in the database.
         self.updated_at = Some(Datetime::default());
-        info!("Syncing the watchlist in the database...");
+        info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE
             .update::<Vec<Self>>("watchlist")
             .content(&self)
             .await?;
-        info!("Synced the watchlist in the database.");
+        info!("Synced {} in the database.", self.id.as_ref().unwrap());
 
         Ok(())
     }
@@ -94,10 +114,10 @@ impl ModelTrait<Watchlist> for Watchlist {
         // Check if it was really created.
         if created_watchlists.is_empty() {
             warn!("No watchlist was created.");
-            dbg!(self);
+            dbg!(&self);
         }
 
-        info!("New watchlist created.");
+        info!("The new {} was created.", self.id.as_ref().unwrap());
         Ok(())
     }
 

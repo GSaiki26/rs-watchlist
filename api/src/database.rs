@@ -60,7 +60,11 @@ async fn signin(uri: &str, username: &str, password: &str) -> surrealdb::Result<
  * A method to run the migrations.
  */
 async fn migrations() -> surrealdb::Result<()> {
+    info!("Running the migrations.");
     User::migration().await?;
     Media::migration().await?;
-    Watchlist::migration().await
+    Watchlist::migration().await?;
+    info!("Successfully ran the migrations.");
+
+    Ok(())
 }

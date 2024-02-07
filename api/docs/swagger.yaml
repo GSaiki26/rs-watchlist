@@ -1,0 +1,577 @@
+openapi: '3.0.0'
+info:
+  title: Watchlist API
+  description: An api to manipulate data from database.
+  contact:
+    name: Gustavo Saiki
+    email: GSaiki26@gmail.com
+  version: '0.1.0'
+servers:
+  - url: http://watchlist-api:3000
+  - url: http://locahost:3000
+
+security: []
+
+
+paths:
+  /user:
+    post:
+      summary: Create a User.
+      description: A method to create a new user.
+      operationId: createNewUser
+      security: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              allOf:
+                - $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+
+    patch:
+      summary: Update a User.
+      description: A method to update an user.
+      operationId: updateUser
+      security: [basicAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUserPost'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+
+    delete:
+      summary: Delete a User.
+      description: A method to delete an user.
+      operationId: deleteUser
+      security: [basicAuth: []]
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /user/{user_id}:
+    parameters:
+      - in: path
+        name: user_id  
+        required: true
+        schema:
+          $ref: '#/components/schemas/IdString'
+
+    get:
+      summary: Get a User.
+      description: A method to get some user.
+      operationId: getUser
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+
+
+  # /media:
+  #   post:
+  #     summary: Create a Media.
+  #     description: A method to create a new media.
+  #     operationId: createNewMedia
+  #     security: [basicAuth: []]
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/RequestMediaPost'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Media'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  # /media/{media_id}:
+  #   parameters:
+  #     - in: path
+  #       name: media_id
+  #       required: true
+  #       schema:
+  #         $ref: '#/components/schemas/IdString'
+
+  #   patch:
+  #     summary: Update a Media.
+  #     description: A method to update a media.
+  #     operationId: updateMedia
+  #     security: [basicAuth: []]
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/RequestMediaPost'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Media'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  #   delete:
+  #     summary: Delete a Media.
+  #     description: A method to delete a media.
+  #     operationId: deleteMedia
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  #   get:
+  #     summary: Get a Media.
+  #     description: A method to get some media.
+  #     operationId: getMedia
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Media'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/403'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+
+
+
+  # /watchlist:
+  #   get:
+  #     summary: Get user's watchlists.
+  #     description: A method to get all the watchlist that user owns.
+  #     operationId: getUserWatchlists
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         description: Retrieved Watchlist.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               required: [status, data]
+  #               allOf:
+  #                 - $ref: '#/components/schemas/Response'
+  #                 - type: object
+  #                   properties:
+  #                     data:
+  #                       type: array
+  #                       items:
+  #                         type: object
+  #                         allOf:
+  #                           - $ref: '#/components/schemas/Watchlist'
+  #                           - $ref: '#/components/schemas/ApiEntry'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  #   post:
+  #     summary: Create a new watchlist
+  #     description: A method to create a new watchlist in the api.
+  #     operationId: createNewWatchlist
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Watchlist'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  # /watchlist/{watchlist_id}:
+  #   parameters:
+  #     - in: path
+  #       name: watchlist_id
+  #       required: true
+  #       schema:
+  #         $ref: '#/components/schemas/IdString'
+
+  #   get:
+  #     summary: Get watchlist
+  #     description: A method to get some watchlist.
+  #     operationId: getWatchlist
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Watchlist'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  #   patch:
+  #     summary: Update a Watchlist.
+  #     description: A method to update a watchlist.
+  #     operationId: updateWatchlist
+  #     security: [basicAuth: []]
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/Watchlist'
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200_Watchlist'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+  #   delete:
+  #     summary: Delete a Watchlist.
+  #     description: A method to delete a watchlist.
+  #     operationId: deleteWatchlist
+  #     security: [basicAuth: []]
+  #     responses:
+  #       '200':
+  #         $ref: '#/components/responses/200'
+  #       '400':
+  #         $ref: '#/components/responses/400'
+  #       '401':
+  #         $ref: '#/components/responses/401'
+  #       '403':
+  #         $ref: '#/components/responses/403'
+  #       '404':
+  #         $ref: '#/components/responses/404'
+  #       '429':
+  #         $ref: '#/components/responses/429'
+  #       '500':
+  #         $ref: '#/components/responses/500'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    # Basic Types
+    Id:
+      type: object
+      additionalProperties: false
+      required: [tb, id]
+      properties:
+        tb:
+          type: string
+          pattern: '^[a-z_]{3,10}$'
+        id:
+          type: object
+          additionalProperties: false
+          properties:
+            String:
+              $ref: '#/components/schemas/IdString'
+    IdString:
+      type: string
+      example: '01HNZQRWG3ZH7KQ16DN3GDCVK5'
+      pattern: '^[A-Z0-9]{26}$'
+    Datetime:
+      type: string
+      example: '2024-01-01T00:00:00.000000000Z'
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{9}Z$'
+
+
+    # Inheritance
+    ApiEntry:
+      type: object
+      required: [id, created_at, updated_at]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/Datetime'
+        updated_at:
+          $ref: '#/components/schemas/Datetime'
+
+    # Objects
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'username'
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+        password:
+          type: string
+          example: 'password'
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+    Media:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'title'
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+        description:
+          type: string
+          example: 'description'
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,60}$'
+        watchlist:
+          $ref: '#/components/schemas/Id'
+        watched:
+          type: boolean
+    Watchlist:
+      type: object
+      properties:
+        owner:
+          $ref: '#/components/schemas/Id'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+        description:
+          type: string
+          pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,60}$'
+
+    # Requests
+    RequestUserPost:
+      type: object
+      required: [username, password]
+      allOf:
+        - $ref: '#/components/schemas/User'
+    RequestMediaPost:
+      type: object
+      required: [title, description, watchlist, watched]
+      allOf:
+        - $ref: '#/components/schemas/Media'
+
+    # Responses
+    Response:
+      type: object
+      additionalProperties: true
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: 'Success'
+          enum: ['Success', 'Failed']
+    ResponseError:
+      type: object
+      required: [status, message]
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Error message'
+              pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,60}$'
+    ResponseSuccessMedia:
+      type: object
+      required: [status, data]
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/Media'
+                - $ref: '#/components/schemas/ApiEntry'
+    ResponseSuccessUser:
+      type: object
+      required: [status, data]
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/User'
+                - $ref: '#/components/schemas/ApiEntry'
+    ResponseSuccessWatchlist:
+      type: object
+      required: [status, data]
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/Watchlist'
+                - $ref: '#/components/schemas/ApiEntry'
+
+  responses:
+    '200':
+      description: Ok.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+    '200_Media':
+      description: Media updated.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessMedia'
+    '200_User':
+      description: User updated.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessUser'
+    '200_Watchlist':
+      description: Watchlist updated.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessWatchlist'
+    '201_Media':
+      description: Media created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessMedia'
+    '201_User':
+      description: User created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessUser'
+    '201_Watchlist':
+      description: Watchlist created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseSuccessWatchlist'
+    '400':
+      description: Bad request parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '401':
+      description: Unauthorized.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '403':
+      description: Forbidden.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '404':
+      description: Not Found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '429':
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '500':
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'

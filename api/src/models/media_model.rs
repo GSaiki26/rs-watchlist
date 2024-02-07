@@ -29,14 +29,14 @@ impl ModelTrait<Media> for Media {
         };
 
         // Get the media.
-        info!("Getting {}.", thing);
-        match DATABASE.select::<Option<Self>>(thing).await? {
+        info!("Getting {}.", &thing);
+        match DATABASE.select::<Option<Self>>(thing.clone()).await? {
             None => {
-                info!("No media found.");
+                info!("No {} found.", &thing);
                 Ok(None)
             }
             Some(media) => {
-                info!("media found.");
+                info!("{} found.", thing);
                 Ok(Some(media))
             }
         }
@@ -50,9 +50,9 @@ impl ModelTrait<Media> for Media {
                 "
                     BEGIN TRANSACTION;
                     DEFINE TABLE media SCHEMAFULL;
-                    DEFINE FIELD title ON TABLE media TYPE string;
-                    DEFINE FIELD description ON TABLE media TYPE string;
-                    DEFINE FIELD watchlist ON TABLE media TYPE record(watchlist);
+                    DEFINE FIELD title ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
+                    DEFINE FIELD description ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
+                    DEFINE FIELD watchlist ON TABLE media TYPE record<watchlist>;
                     DEFINE FIELD watched ON TABLE media TYPE bool;
                     DEFINE FIELD created_at ON TABLE media TYPE datetime;
                     DEFINE FIELD updated_at ON TABLE media TYPE datetime;
@@ -72,9 +72,9 @@ impl ModelTrait<Media> for Media {
 
         // Sync the media in the database.
         self.updated_at = Some(Datetime::default());
-        info!("Syncing the media in the database...");
+        info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE.update::<Vec<Self>>("media").content(&self).await?;
-        info!("Synced the media in the database.");
+        info!("Synced {} in the database.", self.id.as_ref().unwrap());
 
         Ok(())
     }
@@ -92,10 +92,10 @@ impl ModelTrait<Media> for Media {
         // Check if it was really created.
         if created_medias.is_empty() {
             warn!("No media was created.");
-            dbg!(self);
+            dbg!(&self);
         }
 
-        info!("New media created.");
+        info!("The new {} was created.", self.id.as_ref().unwrap());
         Ok(())
     }
 
