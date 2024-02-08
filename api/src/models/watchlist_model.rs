@@ -7,16 +7,35 @@ use super::model_trait::ModelTrait;
 use crate::database::DATABASE;
 
 // Structs
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Watchlist {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Thing>,
-    pub owner: Thing,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<Thing>,
     pub members: Vec<Thing>,
     pub title: String,
     pub description: String,
-    pub created_at: Option<Datetime>,
-    pub updated_at: Option<Datetime>,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WatchlistRequest {
+    pub members: Vec<String>,
+    pub title: String,
+    pub description: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WatchlistResponse {
+    pub id: String,
+    pub owner: String,
+    pub members: Vec<String>,
+    pub title: String,
+    pub description: String,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
 }
 
 // Implementations
@@ -25,7 +44,7 @@ impl Watchlist {
      * A method to check if the watchlist is owned by the given user.
      */
     pub fn is_owner(&self, owner: &Thing) -> bool {
-        self.owner == owner.clone()
+        self.owner.as_ref().unwrap() == owner
     }
 
     /**
@@ -33,6 +52,14 @@ impl Watchlist {
      */
     pub fn has_member(&self, member: &Thing) -> bool {
         self.members.contains(member)
+    }
+
+    /**
+     * A method to convert the current watchlist to a WatchlistResponse
+     */
+    pub fn to_watchlist_response(&self) -> WatchlistResponse {
+        let watchlist = self.clone();
+        WatchlistResponse::from(watchlist)
     }
 }
 
@@ -67,7 +94,8 @@ impl ModelTrait<Watchlist> for Watchlist {
                     BEGIN TRANSACTION;
                     DEFINE TABLE watchlist SCHEMAFULL;
                     DEFINE FIELD owner ON TABLE watchlist TYPE record<user>;
-                    DEFINE FIELD members ON TABLE watchlist TYPE array<record<user>>;
+                    DEFINE FIELD members ON TABLE watchlist TYPE array;
+                    DEFINE FIELD members.* ON TABLE watchlist TYPE record<user>;
                     DEFINE FIELD title ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
                     DEFINE FIELD description ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
                     DEFINE FIELD created_at ON TABLE watchlist TYPE datetime;
@@ -87,7 +115,7 @@ impl ModelTrait<Watchlist> for Watchlist {
         }
 
         // Sync the watchlist in the database.
-        self.updated_at = Some(Datetime::default());
+        self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE
             .update::<Vec<Self>>("watchlist")
@@ -104,7 +132,7 @@ impl ModelTrait<Watchlist> for Watchlist {
         self.id = Some(Self::generate_new_ulid("watchlist").await?);
 
         // Create the watchlist in the database.
-        self.created_at = Some(Datetime::default());
+        self.created_at = Datetime::default();
         self.updated_at = self.created_at.clone();
         let created_watchlists = DATABASE
             .create::<Vec<Self>>("watchlist")
@@ -121,16 +149,63 @@ impl ModelTrait<Watchlist> for Watchlist {
         Ok(())
     }
 
+    fn merge(&mut self, value: Self) {
+        // Merge the watchlist with another watchlist.
+        self.members = value.members;
+        self.title = value.title;
+        self.description = value.description;
+    }
+
     async fn delete(self) -> surrealdb::Result<()> {
         // Check if the watchlist has an id.
         if let Some(id) = self.id.clone() {
             info!("Deleting {}...", &id);
-            DATABASE.delete::<Option<()>>(&id).await?;
+            DATABASE.delete::<Option<Watchlist>>(&id).await?;
             info!("The {} was deleted.", id);
         } else {
             warn!("The watchlist has no id.");
         }
 
         Ok(())
+    }
+}
+
+impl From<WatchlistRequest> for Watchlist {
+    fn from(value: WatchlistRequest) -> Self {
+        // Convert the watchlist request to a watchlist.
+        Self {
+            id: None,
+            owner: None,
+            members: value
+                .members
+                .iter()
+                .map(|member| Thing {
+                    id: Id::from(member),
+                    tb: String::from("user"),
+                })
+                .collect(),
+            title: value.title,
+            description: value.description,
+            created_at: Datetime::default(),
+            updated_at: Datetime::default(),
+        }
+    }
+}
+
+impl From<Watchlist> for WatchlistResponse {
+    fn from(value: Watchlist) -> Self {
+        Self {
+            id: value.id.expect("Logic error").id.to_string(),
+            owner: value.owner.expect("Logic error").id.to_string(),
+            members: value
+                .members
+                .iter()
+                .map(|member| member.id.to_string())
+                .collect(),
+            title: value.title,
+            description: value.description,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+        }
     }
 }

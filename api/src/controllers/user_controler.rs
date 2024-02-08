@@ -1,10 +1,11 @@
 // Libs
 use axum::{extract::Path, http::StatusCode, Json};
 use axum_auth::AuthBasic;
-use surrealdb::sql::{Datetime, Id};
+use surrealdb::sql::Id;
 use tracing::{error, info, warn};
 
 use super::response_body::ResponseBody;
+use crate::models::user_model::UserRequest;
 use crate::models::{model_trait::ModelTrait, user_model::User};
 use crate::security::is_valid_field;
 
@@ -16,9 +17,9 @@ type Response = (StatusCode, Json<ResponseBody>);
  * POST /user
  * A method to create a new user.
 */
-pub async fn post_user(Json(mut user): Json<User>) -> Response {
+pub async fn post_user(Json(new_user): Json<UserRequest>) -> Response {
     // Check if the username is valid.
-    if !is_valid_field(&user.username, 20) {
+    if !is_valid_field(&new_user.username, 20) {
         return (
             StatusCode::BAD_REQUEST,
             ResponseBody::error("The username is invalid. Check the parameters and try again."),
@@ -26,7 +27,7 @@ pub async fn post_user(Json(mut user): Json<User>) -> Response {
     }
 
     // Check if the username already exists.
-    if let Ok(Some(_)) = User::from_username(&user.username).await {
+    if let Ok(Some(_)) = User::from_username(&new_user.username).await {
         warn!("Username already exists.");
         return (
             StatusCode::BAD_REQUEST,
@@ -34,8 +35,9 @@ pub async fn post_user(Json(mut user): Json<User>) -> Response {
         );
     }
 
+    let mut new_user = User::from(new_user);
     // Try to synchronize the given user in the database.
-    match user.sync().await {
+    match new_user.sync().await {
         Err(e) => {
             warn!("Couldn\'t create the user. {}", e);
             (
@@ -45,10 +47,10 @@ pub async fn post_user(Json(mut user): Json<User>) -> Response {
                 ),
             )
         }
-        Ok(_) => {
-            user.clear_password();
-            (StatusCode::CREATED, ResponseBody::success(user))
-        }
+        Ok(_) => (
+            StatusCode::CREATED,
+            ResponseBody::success(new_user.to_user_response()),
+        ),
     }
 }
 
@@ -59,21 +61,20 @@ pub async fn post_user(Json(mut user): Json<User>) -> Response {
 */
 pub async fn patch_user(
     AuthBasic(user_auth): AuthBasic,
-    Json(mut new_user_content): Json<User>,
+    Json(new_user_content): Json<UserRequest>,
 ) -> Response {
     // Check if the authorization is valid.
-    let provided_user = match login_user(user_auth, false).await {
+    let mut logged_user = match login_user(user_auth, false).await {
         Err(res) => return res,
         Ok(user) => user,
     };
 
     // Define the content that the response doesn't have/can't modify.
-    new_user_content.id = provided_user.id;
-    new_user_content.created_at = provided_user.created_at;
-    new_user_content.updated_at = Some(Datetime::default());
+    let new_user_content = User::from(new_user_content);
+    logged_user.merge(new_user_content);
 
     // Try to synchronize the user in the database.
-    match new_user_content.sync().await {
+    match logged_user.sync().await {
         Err(e) => {
             warn!("Couldn\'t update the user. {}", e);
             (
@@ -83,10 +84,10 @@ pub async fn patch_user(
                 ),
             )
         }
-        Ok(_) => {
-            new_user_content.clear_password();
-            (StatusCode::OK, ResponseBody::success(new_user_content))
-        }
+        Ok(_) => (
+            StatusCode::OK,
+            ResponseBody::success(logged_user.to_user_response()),
+        ),
     }
 }
 
@@ -122,10 +123,10 @@ pub async fn get_user(Path(user_id): Path<String>) -> Response {
     // Try to get the user.
     match get_user_from_id(Id::from(user_id)).await {
         Err(response) => response,
-        Ok(mut user) => {
-            user.clear_password();
-            (StatusCode::OK, ResponseBody::success(user))
-        }
+        Ok(user) => (
+            StatusCode::OK,
+            ResponseBody::success(user.to_user_response()),
+        ),
     }
 }
 
@@ -138,10 +139,10 @@ pub async fn post_user_login(AuthBasic(user_auth): AuthBasic) -> Response {
     // Try to login the user.
     match login_user(user_auth, true).await {
         Err(response) => response,
-        Ok(mut user) => {
-            user.clear_password();
-            (StatusCode::OK, ResponseBody::success(user))
-        }
+        Ok(user) => (
+            StatusCode::OK,
+            ResponseBody::success(user.to_user_response()),
+        ),
     }
 }
 
@@ -178,7 +179,10 @@ pub async fn login_user(
     };
     match user_db.is_login_valid(password) {
         false => Err(response_error),
-        true => Ok(user_db),
+        true => {
+            info!("User successfully logged in.");
+            Ok(user_db)
+        }
     }
 }
 

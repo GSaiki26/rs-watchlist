@@ -25,6 +25,12 @@ pub trait ModelTrait<T> {
     async fn create(&mut self) -> surrealdb::Result<()>;
 
     /**
+     * A method to merge the T with another T.
+
+    */
+    fn merge(&mut self, value: Self);
+
+    /**
      * A method to delete the T from the database.
      */
     async fn delete(self) -> surrealdb::Result<()>;

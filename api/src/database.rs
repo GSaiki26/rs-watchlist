@@ -10,7 +10,10 @@ use surrealdb::{
 use tracing::info;
 
 use crate::models::{
-    media_model::Media, model_trait::ModelTrait, user_model::User, watchlist_model::Watchlist,
+    // media_model::Media,
+    model_trait::ModelTrait,
+    user_model::User,
+    watchlist_model::Watchlist,
 };
 
 // Data
@@ -62,7 +65,7 @@ async fn signin(uri: &str, username: &str, password: &str) -> surrealdb::Result<
 async fn migrations() -> surrealdb::Result<()> {
     info!("Running the migrations.");
     User::migration().await?;
-    Media::migration().await?;
+    // Media::migration().await?;
     Watchlist::migration().await?;
     info!("Successfully ran the migrations.");
 

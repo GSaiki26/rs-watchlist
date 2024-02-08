@@ -10,7 +10,7 @@ use tower::ServiceBuilder;
 use tower_http::timeout::TimeoutLayer;
 
 use crate::controllers::user_controler::*;
-// use crate::controllers::watchlist_controler::*;
+use crate::controllers::watchlist_controler::*;
 use crate::middlewares::log::log_stream_middleware;
 
 // Functions
@@ -21,10 +21,11 @@ pub fn get_router() -> Router {
         .route("/user", delete(delete_user))
         .route("/user/:user_id", get(get_user))
         .route("/user/login", post(post_user_login))
-        // .route("/watchlist", post(create_watchlist))
-        // .route("/watchlist/:id", get(get_watchlist))
-        // .route("/watchlist", patch(update_watchlist))
-        // .route("/watchlist", delete(delete_watchlist))
+        .route("/watchlist", post(post_watchlist))
+        .route("/watchlist", get(get_watchlists))
+        .route("/watchlist/:watchlist_id", get(get_watchlist))
+        .route("/watchlist/:watchlist_id", patch(patch_watchlist))
+        .route("/watchlist/:watchlist_id", delete(delete_watchlist))
         .layer(middleware::from_fn(log_stream_middleware))
         .layer(ServiceBuilder::new().layer(TimeoutLayer::new(Duration::from_secs(10))))
 }

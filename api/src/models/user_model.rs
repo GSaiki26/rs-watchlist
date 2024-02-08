@@ -4,24 +4,35 @@ use surrealdb::sql::{Datetime, Id, Thing};
 use tracing::{info, warn};
 
 use super::model_trait::ModelTrait;
+use super::watchlist_model::Watchlist;
 use crate::database::DATABASE;
 use crate::security::get_sha512;
 
 // Structs
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Thing>,
     pub username: String,
 
-    #[serde(skip_serializing_if = "String::is_empty")]
-    password: String,
+    pub password: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<Datetime>,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
+}
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub updated_at: Option<Datetime>,
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UserRequest {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UserResponse {
+    pub id: String,
+    pub username: String,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
 }
 
 // Implementations
@@ -54,6 +65,51 @@ impl User {
     }
 
     /**
+     * A method to get all watchlist the user OWNS.
+     */
+    pub async fn get_watchlists_as_owner(&self) -> surrealdb::Result<Vec<Watchlist>> {
+        // Get the watchlists.
+        info!("Getting all watchlists from {}.", self.id.as_ref().unwrap());
+        let watchlists: Vec<Watchlist> = DATABASE
+            .query("SELECT * FROM watchlist WHERE owner = $owner")
+            .bind(("owner", self.id.as_ref().unwrap()))
+            .await?
+            .take(0)?;
+
+        info!(
+            "{} watchlists found for {}.",
+            watchlists.len(),
+            self.id.as_ref().unwrap()
+        );
+
+        Ok(watchlists)
+    }
+
+    /**
+     * A method to get all watchlist the user is a member.
+     */
+    pub async fn get_watchlists_as_member(&self) -> surrealdb::Result<Vec<Watchlist>> {
+        // Get the watchlists.
+        info!(
+            "Getting all member watchlists from {}.",
+            self.id.as_ref().unwrap()
+        );
+        let watchlists: Vec<Watchlist> = DATABASE
+            .query("SELECT * FROM watchlist WHERE members CONTAINS $member_id")
+            .bind(("member_id", self.id.as_ref().unwrap()))
+            .await?
+            .take(0)?;
+
+        info!(
+            "{} watchlists found for {}.",
+            watchlists.len(),
+            self.id.as_ref().unwrap()
+        );
+
+        Ok(watchlists)
+    }
+
+    /**
      * A method to check if the login is valid for the user.
      */
     pub fn is_login_valid(&self, passwd: String) -> bool {
@@ -67,10 +123,11 @@ impl User {
     }
 
     /**
-     * A method to clear the password
+     * A method to convert the current User to a UserResponse
      */
-    pub fn clear_password(&mut self) {
-        self.password = String::new();
+    pub fn to_user_response(&self) -> UserResponse {
+        let user = self.clone();
+        UserResponse::from(user)
     }
 }
 
@@ -118,20 +175,13 @@ impl ModelTrait<User> for User {
     }
 
     async fn sync(&mut self) -> surrealdb::Result<()> {
-        // Define the username as lowercase and encrypt the password to SHA512.
-        self.username = self.username.to_lowercase();
-        if self.password.len() != 128 {
-            info!("Encrypting the password...");
-            self.password = get_sha512(self.password.as_bytes());
-        }
-
         // Check if the user already has an id. If not, generate a new one.
         if self.id.is_none() {
             return self.create().await;
         }
 
         // Sync the user in the database.
-        self.updated_at = Some(Datetime::default());
+        self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE.update::<Vec<Self>>("user").content(&self).await?;
         info!("Synced {} in the database.", self.id.as_ref().unwrap());
@@ -145,7 +195,7 @@ impl ModelTrait<User> for User {
         self.id = Some(Self::generate_new_ulid("user").await?);
 
         // Create the user in the database.
-        self.created_at = Some(Datetime::default());
+        self.created_at = Datetime::default();
         self.updated_at = self.created_at.clone();
         let created_users = DATABASE.create::<Vec<Self>>("user").content(&self).await?;
 
@@ -159,6 +209,12 @@ impl ModelTrait<User> for User {
         Ok(())
     }
 
+    fn merge(&mut self, value: Self) {
+        // Merge the user with another user.
+        self.username = value.username;
+        self.password = value.password;
+    }
+
     async fn delete(self) -> surrealdb::Result<()> {
         // Check if the user has an id.
         if let Some(id) = self.id.clone() {
@@ -170,5 +226,33 @@ impl ModelTrait<User> for User {
         }
 
         Ok(())
+    }
+}
+
+impl From<UserRequest> for User {
+    fn from(mut value: UserRequest) -> Self {
+        // Treat the username and password.
+        value.username = value.username.to_lowercase();
+        value.password = get_sha512(value.password.as_bytes());
+
+        // Create the user.
+        User {
+            id: None,
+            username: value.username,
+            password: value.password,
+            created_at: Datetime::default(),
+            updated_at: Datetime::default(),
+        }
+    }
+}
+
+impl From<User> for UserResponse {
+    fn from(value: User) -> Self {
+        Self {
+            id: value.id.expect("Logic error.").id.to_string(),
+            username: value.username,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+        }
     }
 }

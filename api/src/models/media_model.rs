@@ -99,6 +99,14 @@ impl ModelTrait<Media> for Media {
         Ok(())
     }
 
+    fn merge(&mut self, value: Self) {
+        // Merge the user with another user.
+        self.title = value.title;
+        self.description = value.description;
+        self.watchlist = value.watchlist;
+        self.watched = value.watched;
+    }
+
     async fn delete(self) -> surrealdb::Result<()> {
         // Check if the media has an id.
         if let Some(id) = self.id.clone() {
