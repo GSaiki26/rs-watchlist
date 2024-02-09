@@ -7,7 +7,7 @@ use super::model_trait::ModelTrait;
 use crate::database::DATABASE;
 
 // Structs
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Media {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Thing>,
@@ -15,17 +15,45 @@ pub struct Media {
     pub description: String,
     pub watchlist: Thing,
     pub watched: bool,
-    pub created_at: Option<Datetime>,
-    pub updated_at: Option<Datetime>,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MediaRequest {
+    pub title: String,
+    pub description: String,
+    pub watchlist: String,
+    pub watched: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MediaResponse {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub watchlist: String,
+    pub watched: bool,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
 }
 
 // Implementations
+impl Media {
+    /**
+     * A method to convert the current media to a MediaResponse
+     */
+    pub fn to_media_response(&self) -> MediaResponse {
+        MediaResponse::from(self.clone())
+    }
+}
+
 impl ModelTrait<Media> for Media {
     async fn from_id(id: Id) -> surrealdb::Result<Option<Self>> {
         // Create the thing.
         let thing = Thing {
             id,
-            tb: String::from("user"),
+            tb: String::from("media"),
         };
 
         // Get the media.
@@ -46,32 +74,32 @@ impl ModelTrait<Media> for Media {
         // Define the media table.
         info!("Running Media migration...");
         DATABASE
-            .query(
-                "
-                    BEGIN TRANSACTION;
-                    DEFINE TABLE media SCHEMAFULL;
-                    DEFINE FIELD title ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
-                    DEFINE FIELD description ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
-                    DEFINE FIELD watchlist ON TABLE media TYPE record<watchlist>;
-                    DEFINE FIELD watched ON TABLE media TYPE bool;
-                    DEFINE FIELD created_at ON TABLE media TYPE datetime;
-                    DEFINE FIELD updated_at ON TABLE media TYPE datetime;
-                    COMMIT TRANSACTION;
-                ",
-            )
-            .await?;
+                .query(
+                    "
+                        BEGIN TRANSACTION;
+                        DEFINE TABLE media SCHEMAFULL;
+                        DEFINE FIELD title ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
+                        DEFINE FIELD description ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
+                        DEFINE FIELD watchlist ON TABLE media TYPE record<watchlist>;
+                        DEFINE FIELD watched ON TABLE media TYPE bool;
+                        DEFINE FIELD created_at ON TABLE media TYPE datetime;
+                        DEFINE FIELD updated_at ON TABLE media TYPE datetime;
+                        COMMIT TRANSACTION;
+                    ",
+                )
+                .await?;
 
         Ok(())
     }
 
     async fn sync(&mut self) -> surrealdb::Result<()> {
-        // Check if the Media already has an id. If not, generate a new one.
+        // Check if the media already has an id. If not, generate a new one.
         if self.id.is_none() {
             return self.create().await;
         }
 
         // Sync the media in the database.
-        self.updated_at = Some(Datetime::default());
+        self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE.update::<Vec<Self>>("media").content(&self).await?;
         info!("Synced {} in the database.", self.id.as_ref().unwrap());
@@ -85,12 +113,12 @@ impl ModelTrait<Media> for Media {
         self.id = Some(Self::generate_new_ulid("media").await?);
 
         // Create the media in the database.
-        self.created_at = Some(Datetime::default());
+        self.created_at = Datetime::default();
         self.updated_at = self.created_at.clone();
-        let created_medias = DATABASE.create::<Vec<Self>>("media").content(&self).await?;
+        let created_media = DATABASE.create::<Vec<Self>>("media").content(&self).await?;
 
         // Check if it was really created.
-        if created_medias.is_empty() {
+        if created_media.is_empty() {
             warn!("No media was created.");
             dbg!(&self);
         }
@@ -100,7 +128,7 @@ impl ModelTrait<Media> for Media {
     }
 
     fn merge(&mut self, value: Self) {
-        // Merge the user with another user.
+        // Merge the media with another media.
         self.title = value.title;
         self.description = value.description;
         self.watchlist = value.watchlist;
@@ -111,12 +139,44 @@ impl ModelTrait<Media> for Media {
         // Check if the media has an id.
         if let Some(id) = self.id.clone() {
             info!("Deleting {}...", &id);
-            DATABASE.delete::<Option<()>>(&id).await?;
+            DATABASE.delete::<Option<Media>>(&id).await?;
             info!("The {} was deleted.", id);
         } else {
             warn!("The media has no id.");
         }
 
         Ok(())
+    }
+}
+
+impl From<MediaRequest> for Media {
+    fn from(value: MediaRequest) -> Self {
+        // Convert the media request to a media.
+        Self {
+            id: None,
+            title: value.title,
+            description: value.description,
+            watchlist: Thing {
+                id: Id::from(value.watchlist),
+                tb: String::from("media"),
+            },
+            watched: value.watched,
+            created_at: Datetime::default(),
+            updated_at: Datetime::default(),
+        }
+    }
+}
+
+impl From<Media> for MediaResponse {
+    fn from(value: Media) -> Self {
+        Self {
+            id: value.id.unwrap().id.to_string(),
+            title: value.title,
+            description: value.description,
+            watchlist: value.watchlist.id.to_string(),
+            watched: value.watched,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+        }
     }
 }

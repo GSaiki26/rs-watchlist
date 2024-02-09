@@ -39,6 +39,7 @@ pub struct UserResponse {
 impl User {
     /**
      * A method to get an user by username.
+     * The username need to be checked from security, BEFORE calling this function.
      */
     pub async fn from_username(username: &str) -> surrealdb::Result<Option<Self>> {
         // Get the user.
@@ -91,7 +92,7 @@ impl User {
     pub async fn get_watchlists_as_member(&self) -> surrealdb::Result<Vec<Watchlist>> {
         // Get the watchlists.
         info!(
-            "Getting all member watchlists from {}.",
+            "Getting all watchlists as member from {}.",
             self.id.as_ref().unwrap()
         );
         let watchlists: Vec<Watchlist> = DATABASE
@@ -101,7 +102,7 @@ impl User {
             .take(0)?;
 
         info!(
-            "{} watchlists found for {}.",
+            "{} watchlists as member found for {}.",
             watchlists.len(),
             self.id.as_ref().unwrap()
         );
@@ -126,8 +127,7 @@ impl User {
      * A method to convert the current User to a UserResponse
      */
     pub fn to_user_response(&self) -> UserResponse {
-        let user = self.clone();
-        UserResponse::from(user)
+        UserResponse::from(self.clone())
     }
 }
 

@@ -1,9 +1,9 @@
 // Libs
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::{Datetime, Id, Thing};
-use tracing::{info, warn};
+use tracing::{error, info, warn};
 
-use super::model_trait::ModelTrait;
+use super::{media_model::Media, model_trait::ModelTrait};
 use crate::database::DATABASE;
 
 // Structs
@@ -41,6 +41,31 @@ pub struct WatchlistResponse {
 // Implementations
 impl Watchlist {
     /**
+     * A method to get all the media from the watchlist.
+     */
+    pub async fn get_media(&self) -> surrealdb::Result<Vec<Media>> {
+        info!("Getting media from {}.", self.id.as_ref().unwrap());
+        match DATABASE
+            .query("SELECT * FROM media WHERE watchlist = $watchlist_id")
+            .bind(("watchlist_id", self.id.as_ref().unwrap()))
+            .await?
+            .take(0)
+        {
+            Err(e) => {
+                error!(
+                    "Couldn\'t get the media from {}.",
+                    self.id.as_ref().unwrap()
+                );
+                Err(e)
+            }
+            Ok(medias) => {
+                info!("The media were successfully retrieved.");
+                Ok(medias)
+            }
+        }
+    }
+
+    /**
      * A method to check if the watchlist is owned by the given user.
      */
     pub fn is_owner(&self, owner: &Thing) -> bool {
@@ -58,8 +83,7 @@ impl Watchlist {
      * A method to convert the current watchlist to a WatchlistResponse
      */
     pub fn to_watchlist_response(&self) -> WatchlistResponse {
-        let watchlist = self.clone();
-        WatchlistResponse::from(watchlist)
+        WatchlistResponse::from(self.clone())
     }
 }
 

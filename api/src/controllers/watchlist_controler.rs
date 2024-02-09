@@ -1,24 +1,22 @@
 // Libs
 use axum::{extract::Path, http::StatusCode, Json};
 use axum_auth::AuthBasic;
-use surrealdb::sql::{Id, Thing};
+use surrealdb::sql::Id;
 use tracing::{error, info, warn};
 
+use super::controllers_utils::*;
 use super::response_body::ResponseBody;
-use super::user_controler::login_user;
 use crate::models::{
+    media_model::MediaResponse,
     model_trait::ModelTrait,
-    user_model::User,
     watchlist_model::{Watchlist, WatchlistRequest, WatchlistResponse},
 };
-
-// Types
-type Response = (StatusCode, Json<ResponseBody>);
 
 // Functions
 /**
  * POST /watchlist
  * Authorization: Basic
+ * BODY: WatchlistRequest
  * A method to create a new watchlist.
 */
 pub async fn post_watchlist(
@@ -71,33 +69,12 @@ pub async fn get_watchlists(AuthBasic(user_auth): AuthBasic) -> Response {
         Ok(logged_user) => logged_user,
     };
 
-    // Get owned watchlists.
-    let mut watchlists = match logged_user.get_watchlists_as_owner().await {
-        Err(e) => {
-            error!("Couldn\'t get the owned watchlists. {}", e);
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ResponseBody::error("Couldn\'t get the watchlists. Please contact the admin."),
-            );
-        }
+    // Get all the watchlists from the user.
+    let watchlists = match get_all_watchlist_from_user(&logged_user).await {
+        Err(res) => return res,
         Ok(watchlists) => watchlists,
     };
 
-    // Get the watchlists where the user is member.
-    let mut member_watchlists = match logged_user.get_watchlists_as_member().await {
-        Err(e) => {
-            error!("Couldn\'t get the as member watchlists. {}", e);
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ResponseBody::error("Couldn\'t get the watchlists. Please contact the admin."),
-            );
-        }
-        Ok(member_watchlists) => member_watchlists,
-    };
-
-    watchlists.append(&mut member_watchlists);
-
-    info!("The watchlists were successfully retrieved.");
     let watchlists = watchlists
         .iter()
         .map(|wl| wl.to_watchlist_response())
@@ -107,6 +84,7 @@ pub async fn get_watchlists(AuthBasic(user_auth): AuthBasic) -> Response {
 
 /**
  * GET /watchlist/{watchlist_id}
+ * Authorization: Basic
  * A method to get an watchlist.
 */
 pub async fn get_watchlist(
@@ -141,8 +119,53 @@ pub async fn get_watchlist(
 }
 
 /**
+ * GET /watchlist/{watchlist_id}/media
+ * Authorization: Basic
+ * A method to get an watchlist.
+*/
+pub async fn get_watchlist_medias(
+    AuthBasic(user_auth): AuthBasic,
+    Path(watchlist_id): Path<String>,
+) -> Response {
+    // Check if the authorization is valid.
+    let logged_user = match login_user(user_auth, false).await {
+        Err(res) => return res,
+        Ok(user) => user,
+    };
+
+    // Get the watchlist.
+    let watchlist = match get_watchlist_from_id(Id::from(watchlist_id)).await {
+        Err(res) => return res,
+        Ok(watchlist) => watchlist,
+    };
+
+    // Check if the user is the owner or is a members of the watchlist.
+    let id = logged_user.id.as_ref().unwrap();
+    if !watchlist.is_owner(id) && !watchlist.has_member(id) {
+        return (
+            StatusCode::FORBIDDEN,
+            ResponseBody::error("You don\'t have permission to access this watchlist."),
+        );
+    }
+
+    // Get the medias from the watchlist.
+    match watchlist.get_media().await {
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            ResponseBody::error("Couldn\'t get the medias. Please contact the admin."),
+        ),
+        Ok(medias) => {
+            info!("The medias were successfully retrieved.");
+            let medias: Vec<MediaResponse> = medias.iter().map(|m| m.to_media_response()).collect();
+            (StatusCode::OK, ResponseBody::success(medias))
+        }
+    }
+}
+
+/**
  * PATCH /watchlist/{watchlist_id}
  * Authorization: Basic
+ * BODY: WatchlistRequest
  * A method to update an watchlist.
 */
 pub async fn patch_watchlist(
@@ -204,6 +227,7 @@ pub async fn patch_watchlist(
 
 /**
  * DELETE /watchlist/{watchlist_id}
+ * Authorization: Basic
  * A method to delete an watchlist.
 */
 pub async fn delete_watchlist(
@@ -242,74 +266,4 @@ pub async fn delete_watchlist(
 
     info!("The {} was successfully deleted.", watchlist_id);
     (StatusCode::OK, ResponseBody::success_no_data())
-}
-
-// Utils
-/**
- * A method to get some watchlist in the database using its id.
-*/
-pub async fn get_watchlist_from_id(watchlist_id: Id) -> Result<Watchlist, Response> {
-    // Try to get the watchlist using his id.
-    match Watchlist::from_id(watchlist_id).await {
-        Err(e) => {
-            error!("Couldn\'t get the watchlist. {}", e);
-            Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ResponseBody::error("Couldn\'t get the watchlist. Please contact the admin."),
-            ))
-        }
-        Ok(None) => {
-            info!("watchlist not found.");
-            Err((
-                StatusCode::NOT_FOUND,
-                ResponseBody::error("watchlist not found. Check the id and try again."),
-            ))
-        }
-        Ok(Some(watchlist)) => {
-            info!("watchlist found.");
-            Ok(watchlist)
-        }
-    }
-}
-
-/**
- * A method to check if all members are valid.
-*/
-pub async fn are_members_valid(owner: &Thing, members: &Vec<String>) -> Result<(), Response> {
-    info!("Checking if all members from the watchlist are valid.");
-    if members.contains(&owner.id.to_string()) {
-        warn!("The owner is a member.");
-        return Err((
-            StatusCode::BAD_REQUEST,
-            ResponseBody::error("Some member is valid. Check the parameters and try again."),
-        ));
-    }
-
-    // Check if all members are valid.
-    for member_id in members {
-        match User::from_id(Id::from(member_id)).await {
-            Err(e) => {
-                error!("Couldn\'t check if all members are valid. {}", e);
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    ResponseBody::error(
-                        "Couldn\'t create the watchlist. Please contact the admin.",
-                    ),
-                ));
-            }
-            Ok(None) => {
-                info!("Some member is invalid.");
-                return Err((
-                    StatusCode::BAD_REQUEST,
-                    ResponseBody::error(
-                        "Some member is valid. Check the parameters and try again.",
-                    ),
-                ));
-            }
-            Ok(Some(_)) => (),
-        }
-    }
-
-    info!("All members are valid.");
-    Ok(())
 }

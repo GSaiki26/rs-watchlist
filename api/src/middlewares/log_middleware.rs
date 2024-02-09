@@ -10,7 +10,7 @@ use axum::{
 use tracing::info;
 
 // Functions
-pub async fn log_stream_middleware(mut req: Request, next: Next) -> Response {
+pub async fn log_stream(mut req: Request, next: Next) -> Response {
     let ip = req
         .extract_parts::<ConnectInfo<SocketAddr>>()
         .await

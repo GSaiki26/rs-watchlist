@@ -8,7 +8,7 @@ use tracing::{info, warn};
 */
 pub fn get_sha512(data: &[u8]) -> String {
     // Encrypt the password to SHA512.
-    info!("Encrypting the password...");
+    info!("Encrypting some field...");
     let pass = digest(&SHA512, data);
     hex::encode(pass)
 }
