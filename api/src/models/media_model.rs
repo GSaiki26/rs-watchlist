@@ -101,7 +101,10 @@ impl ModelTrait<Media> for Media {
         // Sync the media in the database.
         self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
-        DATABASE.update::<Vec<Self>>("media").content(&self).await?;
+        DATABASE
+            .update::<Option<Self>>(("media", self.id.clone().unwrap()))
+            .content(&self)
+            .await?;
         info!("Synced {} in the database.", self.id.as_ref().unwrap());
 
         Ok(())

@@ -119,50 +119,6 @@ pub async fn get_watchlist(
 }
 
 /**
- * GET /watchlist/{watchlist_id}/media
- * Authorization: Basic
- * A method to get an watchlist.
-*/
-pub async fn get_watchlist_medias(
-    AuthBasic(user_auth): AuthBasic,
-    Path(watchlist_id): Path<String>,
-) -> Response {
-    // Check if the authorization is valid.
-    let logged_user = match login_user(user_auth, false).await {
-        Err(res) => return res,
-        Ok(user) => user,
-    };
-
-    // Get the watchlist.
-    let watchlist = match get_watchlist_from_id(Id::from(watchlist_id)).await {
-        Err(res) => return res,
-        Ok(watchlist) => watchlist,
-    };
-
-    // Check if the user is the owner or is a members of the watchlist.
-    let id = logged_user.id.as_ref().unwrap();
-    if !watchlist.is_owner(id) && !watchlist.has_member(id) {
-        return (
-            StatusCode::FORBIDDEN,
-            ResponseBody::error("You don\'t have permission to access this watchlist."),
-        );
-    }
-
-    // Get the medias from the watchlist.
-    match watchlist.get_media().await {
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ResponseBody::error("Couldn\'t get the medias. Please contact the admin."),
-        ),
-        Ok(medias) => {
-            info!("The medias were successfully retrieved.");
-            let medias: Vec<MediaResponse> = medias.iter().map(|m| m.to_media_response()).collect();
-            (StatusCode::OK, ResponseBody::success(medias))
-        }
-    }
-}
-
-/**
  * PATCH /watchlist/{watchlist_id}
  * Authorization: Basic
  * BODY: WatchlistRequest
@@ -204,7 +160,7 @@ pub async fn patch_watchlist(
     // Try to synchronize the watchlist in the database.
     match db_watchlist.sync().await {
         Err(e) => {
-            warn!("Couldn\'t update the watchlist. {}", e);
+            error!("Couldn\'t update the watchlist. {}", e);
             (
                 StatusCode::BAD_REQUEST,
                 ResponseBody::error(
@@ -266,4 +222,48 @@ pub async fn delete_watchlist(
 
     info!("The {} was successfully deleted.", watchlist_id);
     (StatusCode::OK, ResponseBody::success_no_data())
+}
+
+/**
+ * GET /watchlist/{watchlist_id}/media
+ * Authorization: Basic
+ * A method to get an watchlist.
+*/
+pub async fn get_watchlist_medias(
+    AuthBasic(user_auth): AuthBasic,
+    Path(watchlist_id): Path<String>,
+) -> Response {
+    // Check if the authorization is valid.
+    let logged_user = match login_user(user_auth, false).await {
+        Err(res) => return res,
+        Ok(user) => user,
+    };
+
+    // Get the watchlist.
+    let watchlist = match get_watchlist_from_id(Id::from(watchlist_id)).await {
+        Err(res) => return res,
+        Ok(watchlist) => watchlist,
+    };
+
+    // Check if the user is the owner or is a members of the watchlist.
+    let id = logged_user.id.as_ref().unwrap();
+    if !watchlist.is_owner(id) && !watchlist.has_member(id) {
+        return (
+            StatusCode::FORBIDDEN,
+            ResponseBody::error("You don\'t have permission to access this watchlist."),
+        );
+    }
+
+    // Get the medias from the watchlist.
+    match watchlist.get_media().await {
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            ResponseBody::error("Couldn\'t get the medias. Please contact the admin."),
+        ),
+        Ok(medias) => {
+            info!("The medias were successfully retrieved.");
+            let medias: Vec<MediaResponse> = medias.iter().map(|m| m.to_media_response()).collect();
+            (StatusCode::OK, ResponseBody::success(medias))
+        }
+    }
 }

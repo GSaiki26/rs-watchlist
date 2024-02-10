@@ -6,9 +6,10 @@ use tracing::{error, warn};
 
 use super::controllers_utils::*;
 use super::response_body::ResponseBody;
-use crate::models::media_model::MediaRequest;
-use crate::models::watchlist_model::Watchlist;
-use crate::models::{media_model::Media, model_trait::ModelTrait};
+use crate::models::{
+    media_model::Media, media_model::MediaRequest, model_trait::ModelTrait,
+    watchlist_model::Watchlist,
+};
 
 // Functions
 /**
@@ -76,6 +77,45 @@ pub async fn post_media(
 }
 
 /**
+ * GET /media/{media_id}
+ * Authorization: Basic
+ * A method to get an media.
+*/
+pub async fn get_media(AuthBasic(user_auth): AuthBasic, Path(media_id): Path<String>) -> Response {
+    // Get the user.
+    let logged_user = match login_user(user_auth, false).await {
+        Err(res) => return res,
+        Ok(logged_user) => logged_user,
+    };
+
+    // Try to get the media.
+    let media = match get_media_from_id(Id::from(media_id)).await {
+        Err(res) => return res,
+        Ok(media) => media,
+    };
+
+    // Get the media watchlist.
+    let media_watchlist = match get_watchlist_from_id(media.watchlist.id.clone()).await {
+        Err(res) => return res,
+        Ok(media_watchlist) => media_watchlist,
+    };
+
+    // Check if the user has permission in the watchlist.
+    let id = logged_user.id.as_ref().unwrap();
+    if !media_watchlist.is_owner(id) && !media_watchlist.has_member(id) {
+        return (
+            StatusCode::FORBIDDEN,
+            ResponseBody::error("You don\'t have permission to get the media."),
+        );
+    }
+
+    (
+        StatusCode::OK,
+        ResponseBody::success(media.to_media_response()),
+    )
+}
+
+/**
  * PATCH /media/{media_id}
  * Authorization: Basic
  * BODY: MediaRequest
@@ -92,12 +132,14 @@ pub async fn patch_media(
         Ok(logged_user) => logged_user,
     };
     // Check if the provided media is valid.
-    let mut db_media = match get_media_from_id(Id::from(&media_id)).await {
+    let mut db_media = match get_media_from_id(Id::from(media_id)).await {
         Err(res) => return res,
         Ok(media) => media,
     };
+
     // Check if the provided watchlist is valid.
-    let db_watchlist = match get_watchlist_from_id(Id::from(&media_id)).await {
+    let watchlist_id = db_media.watchlist.clone().id;
+    let db_watchlist = match get_watchlist_from_id(watchlist_id).await {
         Err(res) => return res,
         Ok(media) => media,
     };
@@ -119,11 +161,11 @@ pub async fn patch_media(
     // Try to synchronize the media in the database.
     match db_media.sync().await {
         Err(e) => {
-            warn!("Couldn\'t update the media. {}", e);
+            error!("Couldn\'t update the media. {}", e);
             (
                 StatusCode::BAD_REQUEST,
                 ResponseBody::error(
-                    "Couldn\'t create the media. Check the parameters and try again.",
+                    "Couldn\'t update the media. Check the parameters and try again.",
                 ),
             )
         }
@@ -182,20 +224,4 @@ pub async fn delete_media(
     }
 
     (StatusCode::OK, ResponseBody::success_no_data())
-}
-
-/**
- * GET /media/{media_id}
- * Authorization: Basic
- * A method to get an media.
-*/
-pub async fn get_media(Path(media_id): Path<String>) -> Response {
-    // Try to get the media.
-    match get_media_from_id(Id::from(media_id)).await {
-        Err(response) => response,
-        Ok(media) => (
-            StatusCode::OK,
-            ResponseBody::success(media.to_media_response()),
-        ),
-    }
 }

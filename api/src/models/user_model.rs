@@ -163,6 +163,7 @@ impl ModelTrait<User> for User {
                     BEGIN TRANSACTION;
                     DEFINE TABLE user SCHEMAFULL;
                     DEFINE FIELD username ON TABLE user TYPE string VALUE string::lowercase($value) ASSERT $value = /^[a-z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
+                    DEFINE INDEX usernameIndex ON TABLE user COLUMNS username UNIQUE;
                     DEFINE FIELD password ON TABLE user TYPE string ASSERT $value = /^[a-z0-9]{128}$/;
                     DEFINE FIELD created_at ON TABLE user TYPE datetime;
                     DEFINE FIELD updated_at ON TABLE user TYPE datetime;
@@ -183,7 +184,10 @@ impl ModelTrait<User> for User {
         // Sync the user in the database.
         self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
-        DATABASE.update::<Vec<Self>>("user").content(&self).await?;
+        DATABASE
+            .update::<Option<Self>>(("user", self.id.clone().unwrap()))
+            .content(&self)
+            .await?;
         info!("Synced {} in the database.", self.id.as_ref().unwrap());
 
         Ok(())

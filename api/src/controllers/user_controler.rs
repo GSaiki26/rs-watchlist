@@ -6,8 +6,10 @@ use tracing::{error, warn};
 
 use super::controllers_utils::*;
 use super::response_body::ResponseBody;
-use crate::models::user_model::UserRequest;
-use crate::models::{model_trait::ModelTrait, user_model::User};
+use crate::models::{
+    model_trait::ModelTrait,
+    user_model::{User, UserRequest},
+};
 use crate::security::is_valid_field;
 
 // Functions
@@ -96,11 +98,11 @@ pub async fn patch_user(
     // Try to synchronize the user in the database.
     match logged_user.sync().await {
         Err(e) => {
-            warn!("Couldn\'t update the user. {}", e);
+            error!("Couldn\'t update the user. {}", e);
             (
                 StatusCode::BAD_REQUEST,
                 ResponseBody::error(
-                    "Couldn\'t create the user. Check the parameters and try again.",
+                    "Couldn\'t update the user. Check the parameters and try again.",
                 ),
             )
         }

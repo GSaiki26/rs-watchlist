@@ -142,7 +142,7 @@ impl ModelTrait<Watchlist> for Watchlist {
         self.updated_at = Datetime::default();
         info!("Syncing {} in the database...", self.id.as_ref().unwrap());
         DATABASE
-            .update::<Vec<Self>>("watchlist")
+            .update::<Option<Self>>(("watchlist", self.id.clone().unwrap()))
             .content(&self)
             .await?;
         info!("Synced {} in the database.", self.id.as_ref().unwrap());
