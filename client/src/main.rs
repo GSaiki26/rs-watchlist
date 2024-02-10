@@ -2,6 +2,7 @@
 use wasm_bindgen::prelude::*;
 
 mod app;
+mod models;
 use app::App;
 
 // Functions
@@ -12,6 +13,7 @@ extern "C" {
 }
 
 // Main function.
-fn main() {
+#[tokio::main]
+async fn main() {
     yew::Renderer::<App>::new().render();
 }
