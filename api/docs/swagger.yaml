@@ -1,0 +1,863 @@
+openapi: '3.0.0'
+info:
+  title: Watchlist API
+  description: An api to manipulate data from database.
+  contact:
+    name: Gustavo Saiki
+    email: GSaiki26@gmail.com
+  version: '0.1.0'
+servers:
+  - url: http://watchlist-api:3000
+
+security: [basicAuth: []]
+
+
+paths:
+  /media:
+    post:
+      summary: Create a media.
+      description: A method to create a new media.
+      operationId: createNewMedia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_Media'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+  /media/{media_id}:
+    parameters:
+      - in: path
+        name: media_id  
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+
+    get:
+      summary: Get a media.
+      description: A method to get some media.
+      operationId: getMedia
+      responses:
+        '200':
+          $ref: '#/components/responses/200_Media'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    patch:
+      summary: Update a media.
+      description: A method to update a media.
+      operationId: updateMedia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_Media'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    delete:
+      summary: Delete a media.
+      description: A method to delete a media.
+      operationId: deleteMedia
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+
+  /user:
+    post:
+      summary: Create a User.
+      description: A method to create a new user.
+      operationId: createNewUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    patch:
+      summary: Update a User.
+      description: A method to update an user.
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    delete:
+      summary: Delete a User.
+      description: A method to delete an user.
+      operationId: deleteUser
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '400':
+          $ref: '#/components/responses/400'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+  /user/{user_id}:
+    parameters:
+      - in: path
+        name: user_id  
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+
+    get:
+      summary: Get a User.
+      description: A method to get some user.
+      operationId: getUser
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+  /user/login:
+    post:
+      summary: Login a User.
+      description: A method to login an user.
+      operationId: loginUser
+      responses:
+        '200':
+          $ref: '#/components/responses/200_User'
+        '401':
+          $ref: '#/components/responses/401'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+
+  /watchlist:
+    get:
+      summary: Get user's watchlists.
+      description: A method to get all the watchlist that user has.
+      operationId: getUserWatchlists
+      responses:
+        '200':
+          description: Retrieved Watchlists.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Response'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WatchlistResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    post:
+      summary: Create a new watchlist.
+      description: A method to create a new watchlist in the api.
+      operationId: createNewWatchlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchlistRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_Watchlist'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+  /watchlist/{watchlist_id}:
+    parameters:
+      - in: path
+        name: watchlist_id
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+
+    get:
+      summary: Get watchlist.
+      description: A method to get some watchlist.
+      operationId: getWatchlist
+      responses:
+        '200':
+          $ref: '#/components/responses/200_Watchlist'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    patch:
+      summary: Update a Watchlist.
+      description: A method to update a watchlist.
+      operationId: updateWatchlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchlistRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_Watchlist'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+    delete:
+      summary: Delete a Watchlist.
+      description: A method to delete a watchlist.
+      operationId: deleteWatchlist
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+  /watchlist/{watchlist_id}/media:
+    parameters:
+      - in: path
+        name: watchlist_id
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+
+    get:
+      summary: Get watchlist's media.
+      description: A method to get all medias from some watchlist.
+      operationId: getWatchlistMedia
+      responses:
+        '200':
+          description: Retrieved Medias.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Response'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        'default':
+          $ref: '#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    # Basic Types
+    Id:
+      type: string
+      example: 'ATJ9JG27YSDDW30JLUKZ1S6IUE'
+      pattern: '^[A-Z0-9]{26}$'
+    Datetime:
+      type: string
+      example: '2024-01-01T00:00:00.000000000Z'
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{9}Z$'
+    Field:
+      type: string
+      example: 'Title'
+      pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,20}$'
+    BigField:
+      type: string
+      example: 'A big description'
+      pattern: '^[a-zA-Z0-9!@#$%&*_\-+.,<>;\/? ]{3,60}$'
+
+
+    # Inheritance
+    ApiEntry:
+      type: object
+      required: [id, created_at, updated_at]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/Datetime'
+        updated_at:
+          $ref: '#/components/schemas/Datetime'
+
+    # Objects
+    UserRequest:
+      type: object
+      required: [username, password]
+      additionalProperties: false
+      properties:
+        username:
+          $ref: '#/components/schemas/Field'
+        password:
+          $ref: '#/components/schemas/Field'
+    UserResponse:
+      type: object
+      required: [username, password]
+      additionalProperties: true
+      allOf:
+        - $ref: '#/components/schemas/ApiEntry'
+        - type: object
+          properties:
+            username:
+              $ref: '#/components/schemas/Field'
+            password:
+              $ref: '#/components/schemas/Field'
+
+    MediaRequest:
+      type: object
+      required: [title, description, watchlist, watched]
+      additionalProperties: false
+      properties:
+        title:
+          $ref: '#/components/schemas/Field'
+        description:
+          $ref: '#/components/schemas/BigField'
+        watchlist:
+          $ref: '#/components/schemas/Id'
+        watched:
+          type: boolean
+    MediaResponse:
+      type: object
+      required: [title, description, watchlist, watched]
+      additionalProperties: true
+      allOf:
+        - $ref: '#/components/schemas/ApiEntry'
+        - type: object
+          properties:
+            title:
+              $ref: '#/components/schemas/Field'
+            description:
+              $ref: '#/components/schemas/BigField'
+            watchlist:
+              $ref: '#/components/schemas/Id'
+            watched:
+              type: boolean
+
+    WatchlistRequest:
+      type: object
+      required: [members, title, description]
+      additionalProperties: false
+      properties:
+        members:
+          type: array
+          minItems: 0
+          maxItems: 9999999
+          items:
+            $ref: '#/components/schemas/Id'
+        title:
+          $ref: '#/components/schemas/Field'
+        description:
+          $ref: '#/components/schemas/BigField'
+    WatchlistResponse:
+      type: object
+      required: [owner, members, title, description]
+      additionalProperties: true
+      allOf:
+        - $ref: '#/components/schemas/ApiEntry'
+        - type: object
+          properties:
+            owner:
+              $ref: '#/components/schemas/Id'
+            members:
+              type: array
+              items:
+                $ref: '#/components/schemas/Id'
+              minItems: 0
+              maxItems: 9999999
+            title:
+              $ref: '#/components/schemas/Field'
+            description:
+              $ref: '#/components/schemas/BigField'
+
+    # Responses
+    Response:
+      type: object
+      additionalProperties: true
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: 'Success'
+          enum: ['Success', 'Failed']
+    ResponseError:
+      type: object
+      additionalProperties: false
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          example: 'Success'
+          enum: ['Success', 'Failed']
+        message:
+          $ref: '#/components/schemas/BigField'
+
+  responses:
+    '200':
+      description: Ok.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            additionalProperties: true
+            $ref: '#/components/schemas/Response'
+
+    '200_Media':
+      description: Media updated.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/Response'
+            additionalProperties: true
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/MediaResponse'
+    '200_User':    
+      description: User updated.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Response'
+              - type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+
+    '200_Watchlist':
+      description: Watchlist updated.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Response'
+              - type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WatchlistResponse'
+
+    '201_Media':
+      description: Media created.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/Response'
+            additionalProperties: true
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/MediaResponse'
+    '201_User':
+      description: User created.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: '#/components/schemas/Response'
+            additionalProperties: true
+            properties:
+              data:
+                $ref: '#/components/schemas/UserResponse'
+
+    '201_Watchlist':
+      description: Watchlist created.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Response'
+              - type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WatchlistResponse'
+    '400':
+      description: Bad request parameters.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '401':
+      description: Unauthorized.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '403':
+      description: Forbidden.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '404':
+      description: Not Found.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+    '406':
+      description: Not Acceptable.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '429':
+      description: Too Many Requests
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    '500':
+      description: Internal Server Error.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+
+    'default':
+      description: Unexpected error.
+      headers:
+        date:
+          schema:
+            type: string
+            description: The date and time that the response was generated.
+            pattern: '^[Mon,Tue,Wed,Thu,Fri,Sat,Sun]{3},\s[0-9]{2}\s[Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT$'
+        content-length:
+          schema:
+            type: integer
+            description: The length of the response body in octets (8-bit bytes).
+            minimum: 0
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
