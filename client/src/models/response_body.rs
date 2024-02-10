@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 // Enums
 #[derive(Deserialize)]
-enum Status {
+pub enum Status {
     Success,
     Failed,
 }

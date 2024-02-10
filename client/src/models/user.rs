@@ -83,7 +83,7 @@ impl ApiModelTrait for User {
 
         // Do the request.
         let res: ResponseBody<User> = req.send().await?.error_for_status()?.json().await?;
-        Ok(Box::new(User::from(res.data)))
+        Ok(Box::new(res.data))
     }
 
     async fn create<U: Serialize>(_auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
@@ -96,7 +96,7 @@ impl ApiModelTrait for User {
 
         // Do the request
         let res: ResponseBody<User> = req.send().await?.error_for_status()?.json().await?;
-        Ok(Box::new(User::from(res.data)))
+        Ok(Box::new(res.data))
     }
 
     async fn update(&mut self, _auth: UserRequest) -> reqwest::Result<()> {
@@ -114,7 +114,7 @@ impl ApiModelTrait for User {
 
         // Do the request.
         let res: ResponseBody<User> = req.send().await?.error_for_status()?.json().await?;
-        self.merge(User::from(res.data));
+        self.merge(res.data);
         Ok(())
     }
 
@@ -138,11 +138,11 @@ impl ApiModelTrait for User {
     }
 }
 
-impl Into<UserRequest> for &mut User {
-    fn into(self) -> UserRequest {
+impl From<&mut User> for UserRequest {
+    fn from(val: &mut User) -> Self {
         UserRequest::new(
-            &self.username,
-            &self.password.expect("Password not defined."),
+            &val.username,
+            val.password.as_ref().expect("Password not defined."),
         )
     }
 }

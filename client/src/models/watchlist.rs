@@ -58,7 +58,7 @@ impl ApiModelTrait for Watchlist {
 
         // Do the request.
         let res: ResponseBody<Watchlist> = req.send().await?.error_for_status()?.json().await?;
-        Ok(Box::new(Watchlist::from(res.data)))
+        Ok(Box::new(res.data))
     }
 
     async fn create<U: Serialize>(auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
@@ -75,7 +75,7 @@ impl ApiModelTrait for Watchlist {
 
         // Do the request.
         let res: ResponseBody<Watchlist> = req.send().await?.error_for_status()?.json().await?;
-        Ok(Box::new(Watchlist::from(res.data)))
+        Ok(Box::new(res.data))
     }
 
     async fn update(&mut self, auth: UserRequest) -> reqwest::Result<()> {
@@ -93,7 +93,7 @@ impl ApiModelTrait for Watchlist {
 
         // Do the request.
         let res: ResponseBody<Watchlist> = req.send().await?.error_for_status()?.json().await?;
-        self.merge(Watchlist::from(res.data));
+        self.merge(res.data);
         Ok(())
     }
 
@@ -120,18 +120,18 @@ impl ApiModelTrait for Watchlist {
     }
 }
 
-impl Into<WatchlistRequest> for &mut Watchlist {
-    fn into(self) -> WatchlistRequest {
-        WatchlistRequest::new(&self.title, &self.description, self.members)
+impl From<&mut Watchlist> for WatchlistRequest {
+    fn from(val: &mut Watchlist) -> Self {
+        WatchlistRequest::new(&val.title, &val.description, &val.members)
     }
 }
 
 impl WatchlistRequest {
-    fn new(title: &str, description: &str, members: Vec<String>) -> WatchlistRequest {
+    fn new(title: &str, description: &str, members: &[String]) -> WatchlistRequest {
         WatchlistRequest {
-            title: title.to_string(),
-            description: description.to_string(),
-            members,
+            title: String::from(title),
+            description: String::from(description),
+            members: members.to_vec(),
         }
     }
 }

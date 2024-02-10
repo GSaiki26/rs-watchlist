@@ -19,7 +19,7 @@ pub struct Media {
 }
 
 #[derive(Serialize)]
-struct MediaRequest {
+pub struct MediaRequest {
     title: String,
     description: String,
     watchlist: String,
@@ -39,31 +39,24 @@ impl ApiModelTrait for Media {
 
         // Do the request.
         let res: ResponseBody<Media> = req.send().await?.error_for_status()?.json().await?;
-        Ok(Box::new(Media::from(res.data)))
+        Ok(Box::new(res.data))
     }
 
-    async fn create(&mut self, auth: UserRequest) -> reqwest::Result<()> {
+    async fn create<U: Serialize>(auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
         // Get the uri.
         let server_addr = Config::new().get_server_addr();
         let uri = format!("{}/media", server_addr);
 
         // Make the request.
         let (user, pass) = auth.extract_auth();
-        let req_body = MediaRequest::new(
-            &self.title,
-            &self.description,
-            &self.watchlist,
-            self.watched,
-        );
         let req = Client::new()
             .post(uri)
-            .json(&req_body)
+            .json(&content)
             .basic_auth(user, pass);
 
         // Do the request.
         let res: ResponseBody<Media> = req.send().await?.error_for_status()?.json().await?;
-        self.merge(Media::from(res.data));
-        Ok(())
+        Ok(Box::new(res.data))
     }
 
     async fn update(&mut self, auth: UserRequest) -> reqwest::Result<()> {
@@ -73,20 +66,15 @@ impl ApiModelTrait for Media {
 
         // Make the request.
         let (user, pass) = auth.extract_auth();
-        let req_body = MediaRequest::new(
-            &self.title,
-            &self.description,
-            &self.watchlist,
-            self.watched,
-        );
+        let req_body: MediaRequest = self.into();
         let req = Client::new()
             .patch(uri)
             .json(&req_body)
             .basic_auth(user, pass);
 
         // Do the request.
-        let res: ResponseBody<Watchlist> = req.send().await?.error_for_status()?.json().await?;
-        self.merge(Watchlist::from(res.data));
+        let res: ResponseBody<Media> = req.send().await?.error_for_status()?.json().await?;
+        self.merge(res.data);
         Ok(())
     }
 
@@ -99,27 +87,33 @@ impl ApiModelTrait for Media {
         let (user, pass) = auth.extract_auth();
         let req = Client::new().delete(uri).basic_auth(user, pass);
 
-        // Make the request.
+        // Do the request.
         req.send().await?.error_for_status()?;
 
         Ok(())
     }
 
     fn merge(&mut self, value: Self) {
-        self.id = value.id;
-        self.username = value.username;
-        self.password = value.password;
-        self.created_at = value.created_at;
+        self.title = value.title;
+        self.description = value.description;
+        self.watchlist = value.watchlist;
+        self.watched = value.watched;
         self.updated_at = value.updated_at;
+    }
+}
+
+impl From<&mut Media> for MediaRequest {
+    fn from(val: &mut Media) -> Self {
+        MediaRequest::new(&val.title, &val.description, &val.watchlist, val.watched)
     }
 }
 
 impl MediaRequest {
     fn new(title: &str, description: &str, watchlist: &str, watched: bool) -> MediaRequest {
         MediaRequest {
-            title: title.to_string(),
-            description: description.to_string(),
-            watchlist: watchlist.to_string(),
+            title: String::from(title),
+            description: String::from(description),
+            watchlist: String::from(watchlist),
             watched,
         }
     }
