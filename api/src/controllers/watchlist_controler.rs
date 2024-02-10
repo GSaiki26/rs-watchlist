@@ -258,7 +258,7 @@ pub async fn get_watchlist_medias(
     match watchlist.get_media().await {
         Err(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            ResponseBody::error("Couldn\'t get the medias. Please contact the admin."),
+            ResponseBody::error("Couldn\'t get the media. Please contact the admin."),
         ),
         Ok(medias) => {
             info!("The medias were successfully retrieved.");

@@ -480,8 +480,6 @@ components:
           properties:
             username:
               $ref: '#/components/schemas/Field'
-            password:
-              $ref: '#/components/schemas/Field'
 
     MediaRequest:
       type: object

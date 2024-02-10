@@ -19,8 +19,8 @@ use crate::{
 pub fn get_router() -> Router {
     Router::new()
         .route("/media", post(post_media))
-        .route("/media", patch(patch_media))
-        .route("/media", delete(delete_media))
+        .route("/media/:media_id", patch(patch_media))
+        .route("/media/:media_id", delete(delete_media))
         .route("/media/:media_id", get(get_media))
         .route("/user", post(post_user))
         .route("/user", patch(patch_user))

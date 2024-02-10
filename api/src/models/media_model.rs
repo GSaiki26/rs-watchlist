@@ -161,7 +161,7 @@ impl From<MediaRequest> for Media {
             description: value.description,
             watchlist: Thing {
                 id: Id::from(value.watchlist),
-                tb: String::from("media"),
+                tb: String::from("watchlist"),
             },
             watched: value.watched,
             created_at: Datetime::default(),
