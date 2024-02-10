@@ -2,6 +2,8 @@
 **/.vscode
 **/target
 data
+client/dist/
+
 
 # Files
 *.env
