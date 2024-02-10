@@ -18,15 +18,3 @@ jobs:
       - uses: actions/checkout@v3
       - name: Docker build
         run: cd api; docker build -t project .;
-
-  # client-docker-build:
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       os: [ ubuntu-22.04 ]
-  #   runs-on: ${{ matrix.os }}
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Docker build
-  #       run: cd client; docker build -t project .;
