@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   watchlist-db:
@@ -10,3 +10,8 @@ services:
       - 8000:8000/tcp
     volumes:
       - ./data:/data:rw
+  # watchlist-api:
+  #   container_name: watchlist-api
+  #   build: ./api
+  #   ports:
+  #     - 3000:3000/tcp

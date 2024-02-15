@@ -93,6 +93,7 @@ dependencies = [
  "axum-auth",
  "futures-util",
  "hex",
+ "http 1.0.0",
  "once_cell",
  "regex",
  "ring 0.17.7",
@@ -3054,7 +3055,6 @@ dependencies = [
  "tokio",
  "tower-layer",
  "tower-service",
- "tracing",
 ]
 
 [[package]]

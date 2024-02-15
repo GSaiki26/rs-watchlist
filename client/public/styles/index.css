@@ -1,0 +1,168 @@
+/* IDs */
+#index-container {
+  align-items: center;
+  border: 1px solid black;
+  display: flex;
+  height: 100%;
+  width: 100dvw;
+}
+
+#index-watchlists-list {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 40%;
+}
+
+#index-watchlist-content {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+#index-watchlist-selected {
+  align-items: center;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 10%;
+  width: 100%;
+}
+
+#index-watchlist-selected-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+#index-watchlist-selected-description {
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+/* Classes */
+.index-create {
+  font-size: 1.6rem;
+}
+
+.index-entry-owner {
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.index-entry-title {
+  display: flex;
+  font-weight: bold;
+  flex-direction: column;
+}
+
+.index-entry-delete {
+  padding: 0.4rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.index-entry-delete:focus, .index-entry-delete:hover {
+  color: red;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 1s;
+}
+
+.index-media-entry {
+  align-items: center;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  height: 4%;
+  padding: 1rem;
+  transition: 0.25s;
+  width: 100%;
+}
+.index-media-entry:focus, .index-media-entry:hover {
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+.index-media-entry-status {
+  color: green;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.index-searchbox {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  height: 3rem;
+  width: 100%;
+}
+
+.index-search {
+  background: transparent;
+  border: 2px solid transparent;
+  border-bottom: 2px solid var(--color1);
+  font-size: larger;
+  text-align: center;
+  text-transform: uppercase;
+  height: 100%;
+  outline: none;
+  transition: 0.25s;
+  width: 100%;
+}
+.index-search::placeholder {
+  text-transform: none;
+}
+
+.index-submit {
+  background: var(--color1);
+  border: 2px solid transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  height: 100%;
+  outline: none;
+  transition: 0.25s;
+  width: 4rem;
+}
+
+.index-sync {
+  background-image: url('./public/loading.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  height: 100%;
+  width: 4rem;
+}
+
+.index-syncing:hover {
+  animation: spin 2s linear infinite;
+}
+
+.index-watchlist-entry {
+  align-items: center;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  height: 8%;
+  padding: 1rem;
+  transition: 0.25s;
+  width: 100%;
+}
+.index-watchlist-entry:focus, .index-watchlist-entry:hover {
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

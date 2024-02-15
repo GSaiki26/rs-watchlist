@@ -1,13 +1,17 @@
+// Libs
 use std::time::Duration;
 
-// Libs
 use axum::{
     middleware,
     routing::{delete, get, patch, post},
     Router,
 };
+use http::{header::AUTHORIZATION, Method};
 use tower::ServiceBuilder;
-use tower_http::timeout::TimeoutLayer;
+use tower_http::{
+    cors::{Any, CorsLayer},
+    timeout::TimeoutLayer,
+};
 
 use crate::{
     controllers::media_controler::*, controllers::user_controler::*,
@@ -17,6 +21,21 @@ use crate::{
 
 // Functions
 pub fn get_router() -> Router {
+    // Define the middlewares.
+    let timeout = TimeoutLayer::new(Duration::from_secs(10));
+    let cors = CorsLayer::new()
+        .allow_methods(vec![
+            Method::GET,
+            Method::POST,
+            Method::PATCH,
+            Method::DELETE,
+        ])
+        // .allow_origin(vec!["http://localhost:1420".parse().unwrap()])
+        .allow_origin(Any)
+        // .allow_credentials(true)
+        .allow_headers([AUTHORIZATION]);
+
+    // Create the router.
     Router::new()
         .route("/media", post(post_media))
         .route("/media/:media_id", patch(patch_media))
@@ -35,5 +54,5 @@ pub fn get_router() -> Router {
         .route("/watchlist/:watchlist_id/media", get(get_watchlist_medias))
         .layer(middleware::from_fn(log_stream))
         .layer(middleware::from_fn(acceptable_headers))
-        .layer(ServiceBuilder::new().layer(TimeoutLayer::new(Duration::from_secs(10))))
+        .layer(ServiceBuilder::new().layer(timeout).layer(cors))
 }

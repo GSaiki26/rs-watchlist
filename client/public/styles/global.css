@@ -1,0 +1,55 @@
+/* Data */
+:root {
+  --color1: #EB9757;
+  --color2: #EBC157;
+  --color3: #EBB058;
+  --color4: #EB7D57;
+  --color5: #EBD357;
+  --color6: #EBCFA5;
+}
+
+/* Globals */
+/* Tags */
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--color4);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* IDs */
+#error-message {
+  align-items: center;
+  background-color: #ff000098;
+  border-radius: 8px;
+  display: flex;
+  font-weight: bold;
+  height: 5.4rem;
+  justify-content: center;
+  position: absolute;
+  text-transform: uppercase;
+  top: 10%;
+  width: 50%;
+}
+
+html, body {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  height: 100%;
+  justify-content: center;
+  margin: 0%;
+  padding: 0%;
+  width: 100%;
+}
+
+/* Classes
+*/
+.hidden {
+  display: none !important;
+}

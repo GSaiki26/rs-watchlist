@@ -1,9 +1,12 @@
+// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+// let new_msg = invoke("greet", args).await.as_string().unwrap();
 // Libs
 use wasm_bindgen::prelude::*;
 
-mod app;
+mod components;
 mod models;
-use app::App;
+mod pages;
+mod router;
 
 // Functions
 #[wasm_bindgen]
@@ -13,7 +16,6 @@ extern "C" {
 }
 
 // Main function.
-#[tokio::main]
-async fn main() {
-    yew::Renderer::<App>::new().render();
+fn main() {
+    yew::Renderer::<router::App>::new().render();
 }

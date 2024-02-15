@@ -8,15 +8,15 @@ use super::{
 };
 
 // Structs
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, PartialEq)]
 pub struct Watchlist {
-    id: String,
-    owner: String,
-    title: String,
-    description: String,
-    members: Vec<String>,
-    created_at: String,
-    updated_at: String,
+    pub id: String,
+    pub owner: String,
+    pub title: String,
+    pub description: String,
+    pub members: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Serialize)]
@@ -33,7 +33,7 @@ impl Watchlist {
      */
     async fn get_media_list(&self, auth: &UserRequest) -> reqwest::Result<Vec<Media>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist/media", server_addr);
 
         // Make the request.
@@ -49,7 +49,7 @@ impl Watchlist {
 impl ApiModelTrait for Watchlist {
     async fn get_by_id(auth: UserRequest, id: &str) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist/{}", server_addr, id);
 
         // Make the request.
@@ -63,7 +63,7 @@ impl ApiModelTrait for Watchlist {
 
     async fn create<U: Serialize>(auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist", server_addr);
 
         // Make the request.
@@ -80,7 +80,7 @@ impl ApiModelTrait for Watchlist {
 
     async fn update(&mut self, auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist/{}", server_addr, self.id.clone());
 
         // Make the request.
@@ -99,7 +99,7 @@ impl ApiModelTrait for Watchlist {
 
     async fn delete(self, auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist/{}", server_addr, self.id);
 
         // Make the request.

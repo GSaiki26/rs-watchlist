@@ -1,5 +1,5 @@
 // Libs
-use reqwest::Client;
+use reqwest::{Client, Method};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -10,12 +10,12 @@ use super::{
 // Structs
 #[derive(Clone, Deserialize)]
 pub struct User {
-    id: String,
-    username: String,
+    pub id: String,
+    pub username: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    password: Option<String>,
-    created_at: String,
-    updated_at: String,
+    pub password: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 /**
@@ -33,37 +33,41 @@ impl User {
     /**
      * A method to check if the login is valid.
      */
-    async fn is_login_valid(&self) -> reqwest::Result<()> {
+    pub async fn login(user_auth: UserRequest) -> reqwest::Result<User> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        // let server_addr = Config::get_server_addr().await;
+        let server_addr = "http://127.0.0.1:3000";
         let uri = format!("{}/user/login", server_addr);
 
         // Make the request.
-        let Self {
-            username, password, ..
-        } = self.clone();
-        let req = Client::new().post(uri).basic_auth(username, password);
+        let (username, password) = user_auth.extract_auth();
+        let req = Client::new()
+            .request(Method::POST, uri)
+            .basic_auth(username, password);
 
         // Do the request.
-        req.send()
+        let user = req
+            .send()
             .await?
             .error_for_status()?
             .json::<ResponseBody<Self>>()
             .await?;
-        Ok(())
+        Ok(user.data)
     }
 
     /**
      * A method to get all watchlists the user is involved.
      */
-    async fn get_watchlists(&self) -> reqwest::Result<Vec<Watchlist>> {
+    pub async fn get_watchlists(&self) -> reqwest::Result<Vec<Watchlist>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/watchlist", server_addr);
 
         // Make the request.
         let Self { id, password, .. } = self.clone();
-        let req = Client::new().post(uri).basic_auth(id, password);
+        let req = Client::new()
+            .request(Method::POST, uri)
+            .basic_auth(id, password);
 
         // Do the request.
         let res: ResponseBody<Vec<Watchlist>> =
@@ -75,11 +79,11 @@ impl User {
 impl ApiModelTrait for User {
     async fn get_by_id(_auth: UserRequest, id: &str) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/user/{}", server_addr, id);
 
         // Make the request.
-        let req = Client::new().get(uri);
+        let req = Client::new().request(Method::GET, uri);
 
         // Do the request.
         let res: ResponseBody<User> = req.send().await?.error_for_status()?.json().await?;
@@ -88,11 +92,11 @@ impl ApiModelTrait for User {
 
     async fn create<U: Serialize>(_auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/user", server_addr);
 
         // Make the request.
-        let req = Client::new().post(uri).json(&content);
+        let req = Client::new().request(Method::POST, uri).json(&content);
 
         // Do the request
         let res: ResponseBody<User> = req.send().await?.error_for_status()?.json().await?;
@@ -101,14 +105,14 @@ impl ApiModelTrait for User {
 
     async fn update(&mut self, _auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/user/{}", server_addr, self.id.clone());
 
         // Make the request.
         let Self { id, password, .. } = self.clone();
         let req_body: UserRequest = self.into();
         let req = Client::new()
-            .patch(uri)
+            .request(Method::PATCH, uri)
             .basic_auth(id, password)
             .json(&req_body);
 
@@ -120,12 +124,14 @@ impl ApiModelTrait for User {
 
     async fn delete(self, _auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/user/{}", server_addr, self.id);
 
         // Make the request.
         let Self { id, password, .. } = self.clone();
-        let req = Client::new().delete(uri).basic_auth(id, password);
+        let req = Client::new()
+            .request(Method::DELETE, uri)
+            .basic_auth(id, password);
 
         // Do the request.
         req.send().await?.error_for_status()?;

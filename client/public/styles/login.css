@@ -1,0 +1,46 @@
+/* Tags */
+.login-form {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+.login-input {
+  background: none;
+  border: 2px solid transparent;
+  border-left: 2px solid var(--color1);
+  height: 1.8rem;
+  margin: 0.8rem;
+  outline: none;
+  text-align: center;
+  transition: 0.25s;
+  width: 9.4rem;
+}
+.login-input[type="submit"] {
+  font-weight: bold;
+}
+.login-input:focus, .login-input:hover {
+  /* border-left: 0px; */
+  border-bottom-left-radius: 6px;
+  border-bottom: 2px solid var(--color1);
+  font-weight: bold;
+  width: 10.8rem;
+}
+
+/* IDs */
+#login-container {
+  align-items: center;
+  border: 1px solid black;
+  display: flex;
+  height: 60%;
+  justify-content: center;
+  width: 50%;
+}
+
+/* Classes */
+.login-change-form {
+  margin: 1rem;
+}

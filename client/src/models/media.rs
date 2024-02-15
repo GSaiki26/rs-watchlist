@@ -30,7 +30,7 @@ pub struct MediaRequest {
 impl ApiModelTrait for Media {
     async fn get_by_id(auth: UserRequest, id: &str) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/media/{}", server_addr, id);
 
         // Make the request.
@@ -44,7 +44,7 @@ impl ApiModelTrait for Media {
 
     async fn create<U: Serialize>(auth: UserRequest, content: U) -> reqwest::Result<Box<Self>> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/media", server_addr);
 
         // Make the request.
@@ -61,7 +61,7 @@ impl ApiModelTrait for Media {
 
     async fn update(&mut self, auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/media/{}", server_addr, self.id.clone());
 
         // Make the request.
@@ -80,7 +80,7 @@ impl ApiModelTrait for Media {
 
     async fn delete(self, auth: UserRequest) -> reqwest::Result<()> {
         // Get the uri.
-        let server_addr = Config::new().get_server_addr();
+        let server_addr = Config::get_server_addr().await;
         let uri = format!("{}/media/{}", server_addr, self.id);
 
         // Make the request.

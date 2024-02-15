@@ -19,7 +19,7 @@ function install_tauri_cli() {
 }
 
 function build() {
-    TAURI_BUILD_TARGET=deb # appimage, msi, app or dmg
+    TAURI_BUILD_TARGET=deb # deb, appimage, msi, app or dmg
     echo "Building the app to $TAURI_BUILD_TARGET"
     cargo tauri build -b $TAURI_BUILD_TARGET
     echo "Building the app done"
