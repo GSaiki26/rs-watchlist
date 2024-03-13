@@ -74,20 +74,16 @@ impl ModelTrait<Media> for Media {
         // Define the media table.
         info!("Running Media migration...");
         DATABASE
-                .query(
-                    "
-                        BEGIN TRANSACTION;
-                        DEFINE TABLE media SCHEMAFULL;
-                        DEFINE FIELD title ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
-                        DEFINE FIELD description ON TABLE media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
-                        DEFINE FIELD watchlist ON TABLE media TYPE record<watchlist>;
-                        DEFINE FIELD watched ON TABLE media TYPE bool;
-                        DEFINE FIELD created_at ON TABLE media TYPE datetime;
-                        DEFINE FIELD updated_at ON TABLE media TYPE datetime;
-                        COMMIT TRANSACTION;
-                    ",
-                )
-                .await?;
+            .query("BEGIN TRANSACTION;")
+            .query("DEFINE TABLE media SCHEMAFULL;")
+            .query("DEFINE FIELD title ON media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;")
+            .query("DEFINE FIELD description ON media TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;")
+            .query("DEFINE FIELD watchlist ON media TYPE record<watchlist>;")
+            .query("DEFINE FIELD watched ON media TYPE bool;")
+            .query("DEFINE FIELD created_at ON media TYPE datetime;")
+            .query("DEFINE FIELD updated_at ON media TYPE datetime;")
+            .query("COMMIT TRANSACTION;")
+            .await?;
 
         Ok(())
     }

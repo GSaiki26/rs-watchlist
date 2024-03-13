@@ -158,18 +158,14 @@ impl ModelTrait<User> for User {
         // Define the users table.
         info!("Running User migration...");
         DATABASE
-            .query(
-                "
-                    BEGIN TRANSACTION;
-                    DEFINE TABLE user SCHEMAFULL;
-                    DEFINE FIELD username ON TABLE user TYPE string VALUE string::lowercase($value) ASSERT $value = /^[a-z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
-                    DEFINE INDEX usernameIndex ON TABLE user COLUMNS username UNIQUE;
-                    DEFINE FIELD password ON TABLE user TYPE string ASSERT $value = /^[a-z0-9]{128}$/;
-                    DEFINE FIELD created_at ON TABLE user TYPE datetime;
-                    DEFINE FIELD updated_at ON TABLE user TYPE datetime;
-                    COMMIT TRANSACTION;
-                ",
-            )
+            // .query("BEGIN TRANSACTION")
+            .query("DEFINE TABLE user SCHEMAFULL;")
+            .query("DEFINE FIELD username ON TABLE user TYPE string VALUE string::lowercase($value) ASSERT $value = /^[a-z0-9!@#$%&*_;\\+.,<>;\\/? ]{3,20}$/;")
+            .query("DEFINE INDEX usernameIndex ON TABLE user COLUMNS username UNIQUE;")
+            .query("DEFINE FIELD password ON TABLE user TYPE string ASSERT $value = /^[a-z0-9]{128}$/;")
+            .query("DEFINE FIELD created_at ON TABLE user TYPE datetime;")
+            .query("DEFINE FIELD updated_at ON TABLE user;")
+            .query("COMMIT TRANSACTION;")
             .await?;
 
         Ok(())

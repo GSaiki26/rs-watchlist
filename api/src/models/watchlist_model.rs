@@ -113,20 +113,16 @@ impl ModelTrait<Watchlist> for Watchlist {
         // Define the watchlist table.
         info!("Running watchlist migration...");
         DATABASE
-            .query(
-                "
-                    BEGIN TRANSACTION;
-                    DEFINE TABLE watchlist SCHEMAFULL;
-                    DEFINE FIELD owner ON TABLE watchlist TYPE record<user>;
-                    DEFINE FIELD members ON TABLE watchlist TYPE array;
-                    DEFINE FIELD members.* ON TABLE watchlist TYPE record<user>;
-                    DEFINE FIELD title ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;
-                    DEFINE FIELD description ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;
-                    DEFINE FIELD created_at ON TABLE watchlist TYPE datetime;
-                    DEFINE FIELD updated_at ON TABLE watchlist TYPE datetime;
-                    COMMIT TRANSACTION;
-                ",
-            )
+            .query("BEGIN TRANSACTION;")
+            .query("DEFINE TABLE watchlist SCHEMAFULL;")
+            .query("DEFINE FIELD owner ON TABLE watchlist TYPE record<user>;")
+            .query("DEFINE FIELD members ON TABLE watchlist TYPE array;")
+            .query("DEFINE FIELD members.* ON TABLE watchlist TYPE record<user>;")
+            .query("DEFINE FIELD title ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,20}$/;")
+            .query("DEFINE FIELD description ON TABLE watchlist TYPE string ASSERT $value = /^[a-zA-Z0-9!@#$%&*_\\-+.,<>;\\/? ]{3,60}$/;")
+            .query("DEFINE FIELD created_at ON TABLE watchlist TYPE datetime;")
+            .query("DEFINE FIELD updated_at ON TABLE watchlist TYPE datetime;")
+            .query("COMMIT TRANSACTION;")
             .await?;
 
         Ok(())
